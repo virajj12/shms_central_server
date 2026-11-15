@@ -1,0 +1,48 @@
+/* SHMS Central Fleet Admin CSS */
+
+:root {
+  --bg-primary: #0f0f12;
+  --bg-card: #18181c;
+  --bg-secondary: #222228;
+  --border-color: #27272a;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: #f4f4f5;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f0f12;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Pulse indicator animations */
+@keyframes emeraldPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.15); }
+}
+
+.pulse-emerald {
+  animation: emeraldPulse 2s infinite ease-in-out;
+}
+
+/* Modal Backdrops */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
