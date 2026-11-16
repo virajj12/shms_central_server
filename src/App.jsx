@@ -72,6 +72,15 @@ export default function App() {
     }
   };
 
+  const handleApproveNode = async (identifier) => {
+    try {
+      await api.approveEnrollment(identifier);
+      refreshData();
+    } catch (e) {
+      alert(`Approval error: ${e.message}`);
+    }
+  };
+
   const handleTriggerSync = async (node) => {
     try {
       const result = await api.triggerSync(node.id);
@@ -186,6 +195,7 @@ export default function App() {
                   <NodeCard
                     key={node.id}
                     node={node}
+                    onApprove={handleApproveNode}
                     onRequestSnapshot={(n) => setSnapshotNode(n)}
                     onTriggerSync={handleTriggerSync}
                     onOpenConfig={(n) => setConfigNode(n)}

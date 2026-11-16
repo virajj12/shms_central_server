@@ -37,7 +37,8 @@ export default function Navbar({ overview, user, onLogout }) {
         api.getPendingEnrollments(),
       ]);
       setOwnerInfo(info);
-      setPending(enrollment?.edges || []);
+      const rawEdges = Array.isArray(enrollment) ? enrollment : (enrollment?.edges || []);
+      setPending(rawEdges);
     } catch (error) {
       console.error('Owner data load failed', error);
     }
@@ -200,7 +201,7 @@ export default function Navbar({ overview, user, onLogout }) {
                 </div>
               ) : (
                 pending.map((edge) => (
-                  <div key={edge.request_id} className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 space-y-2">
+                  <div key={edge.request_id || edge.id} className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 space-y-2">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-xs font-bold text-white">{edge.name || edge.kitchen_name}</div>
@@ -213,17 +214,17 @@ export default function Navbar({ overview, user, onLogout }) {
                     <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-zinc-400">
                       <div>ID: {edge.id}</div>
                       <div>PIN: {edge.pairing_pin || '—'}</div>
-                      <div className="col-span-2 truncate">Request: {edge.request_id}</div>
+                      <div className="col-span-2 truncate">Request: {edge.request_id || edge.id}</div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button
-                        onClick={() => approveEnrollment(edge.request_id)}
+                        onClick={() => approveEnrollment(edge.request_id || edge.id)}
                         className="h-8 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold"
                       >
                         Approve &amp; Connect
                       </button>
                       <button
-                        onClick={() => rejectEnrollment(edge.request_id)}
+                        onClick={() => rejectEnrollment(edge.request_id || edge.id)}
                         className="h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center justify-center gap-1"
                       >
                         <XCircle className="h-3.5 w-3.5" />

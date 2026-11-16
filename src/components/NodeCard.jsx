@@ -1,8 +1,9 @@
 import React from 'react';
-import { Camera, RefreshCw, Sliders, Trash2 } from 'lucide-react';
+import { Camera, RefreshCw, Sliders, Trash2, CheckCircle } from 'lucide-react';
 
 export default function NodeCard({
   node,
+  onApprove,
   onRequestSnapshot,
   onTriggerSync,
   onOpenConfig,
@@ -10,6 +11,7 @@ export default function NodeCard({
 }) {
   const isOnline = node.status === 'online';
   const duplexConnected = Boolean(node.duplex_connected);
+  const isPending = node.status === 'pending' || node.enrollment_status === 'pending';
   const cameras = node.cameras || [];
   const telemetry = node.telemetry || {};
   const unsynced = Number(node.unsynced_count || 0);
@@ -96,34 +98,47 @@ export default function NodeCard({
 
       {/* Action Toolbar */}
       <div className="mt-5 pt-4 border-t border-zinc-800 flex items-center justify-between gap-2">
-        <button
-          onClick={() => onRequestSnapshot(node)}
-          disabled={!isOnline || !duplexConnected || cameras.length === 0}
-          title="Capture a live JPEG snapshot from the edge camera"
-          className="flex-1 py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 disabled:opacity-40 disabled:pointer-events-none text-zinc-200 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
-        >
-          <Camera className="h-3.5 w-3.5 text-emerald-400" />
-          <span>Live Snapshot</span>
-        </button>
+        {isPending ? (
+          <button
+            onClick={() => onApprove && onApprove(node.request_id || node.id)}
+            title="Approve this kitchen node to grant cloud access"
+            className="flex-1 py-2 px-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40"
+          >
+            <CheckCircle className="h-4 w-4" />
+            <span>Approve & Connect Node</span>
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => onRequestSnapshot(node)}
+              disabled={!isOnline || !duplexConnected || cameras.length === 0}
+              title="Capture a live JPEG snapshot from the edge camera"
+              className="flex-1 py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 disabled:opacity-40 disabled:pointer-events-none text-zinc-200 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <Camera className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Live Snapshot</span>
+            </button>
 
-        <button
-          onClick={() => onTriggerSync(node)}
-          disabled={!isOnline || !duplexConnected}
-          title="Ask the edge to sync pending incidents now"
-          className="py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 disabled:opacity-40 disabled:pointer-events-none text-zinc-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors"
-        >
-          <RefreshCw className="h-3.5 w-3.5 text-sky-400" />
-          <span>Sync</span>
-        </button>
+            <button
+              onClick={() => onTriggerSync(node)}
+              disabled={!isOnline || !duplexConnected}
+              title="Ask the edge to sync pending incidents now"
+              className="py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 disabled:opacity-40 disabled:pointer-events-none text-zinc-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors"
+            >
+              <RefreshCw className="h-3.5 w-3.5 text-sky-400" />
+              <span>Sync</span>
+            </button>
 
-        <button
-          onClick={() => onOpenConfig(node)}
-          className="py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors"
-          title="Remote Edge Settings & AMFV"
-        >
-          <Sliders className="h-3.5 w-3.5 text-zinc-400" />
-          <span>Config</span>
-        </button>
+            <button
+              onClick={() => onOpenConfig(node)}
+              className="py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors"
+              title="Remote Edge Settings & AMFV"
+            >
+              <Sliders className="h-3.5 w-3.5 text-zinc-400" />
+              <span>Config</span>
+            </button>
+          </>
+        )}
 
         <button
           onClick={() => onDelete(node.id)}

@@ -102,7 +102,7 @@ app.get('/api/fleet/owner_info', requireAdmin, async (req, res) => {
 app.get('/api/fleet/enrollment/pending', requireAdmin, async (req, res) => {
   try {
     const pending = await db.listPendingEnrollments(req.user.owner_id);
-    return res.json(pending);
+    return res.json({ success: true, edges: pending });
   } catch (err) {
     return res.status(500).json({ detail: err.message });
   }
