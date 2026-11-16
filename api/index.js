@@ -346,7 +346,12 @@ app.post(['/api/edge/pair', '/api/edge/request_connection', '/api/fleet/register
       auth_token: result.token,
       pin: req.body?.pairing_pin || '',
       supabase_url: process.env.SUPABASE_URL || '',
-      supabase_anon_key: process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+      supabase_anon_key:
+        process.env.SUPABASE_PUBLISHABLE_KEY ||
+        process.env.SUPABASE_ANON_KEY ||
+        process.env.SUPABASE_SECRET_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        '',
       supabase_bucket: process.env.SUPABASE_BUCKET || 'evidence-snapshots',
     });
   } catch (err) {
@@ -385,7 +390,12 @@ app.get('/api/edge/enrollment/:requestId/credentials', async (req, res) => {
       kitchen_id: node.id,
       auth_token: updated.plain_token,
       supabase_url: process.env.SUPABASE_URL || '',
-      supabase_anon_key: process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+      supabase_anon_key:
+        process.env.SUPABASE_PUBLISHABLE_KEY ||
+        process.env.SUPABASE_ANON_KEY ||
+        process.env.SUPABASE_SECRET_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        '',
       supabase_bucket: process.env.SUPABASE_BUCKET || 'evidence-snapshots',
     });
   } catch (err) {

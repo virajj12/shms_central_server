@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 9000;
 app.use(apiApp);
 
 // Mount the compiled frontend build if available
-const frontendDist = path.join(__dirname, 'frontend', 'dist');
+const frontendDist = path.join(__dirname, 'dist');
 app.use(express.static(frontendDist));
 
 // SPA fallback for React router
@@ -29,7 +29,7 @@ app.get('*', (req, res) => {
           <body style="font-family:sans-serif; background:#121214; color:#eee; padding:40px; text-align:center;">
             <h2>SHMS Central Server (Node.js/Vercel) API Active</h2>
             <p>API endpoints are active at <code>/api/*</code>.</p>
-            <p>To view the React dashboard, build the frontend: <code>cd frontend && npm run build</code></p>
+            <p>To view the React dashboard, build the frontend: <code>npm run build</code></p>
           </body>
         </html>
       `);
