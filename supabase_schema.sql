@@ -121,11 +121,11 @@ CREATE TABLE IF NOT EXISTS admin_users (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Seed Default Superadmin (Username: admin, Password: admin123)
--- bcrypt hash for 'admin123': $2b$12$e6mZ82kU2fQ9qZ7YQ7H6OeJm3fXG7p5H6a1K8fJ4e0d9b8a7c6e5a (or standard bcrypt)
+-- Seed Default Superadmin (Username: admin, Password: vjv@shmsadmin.commm)
 INSERT INTO admin_users (username, password_hash, role, owner_id, is_superadmin)
-VALUES ('admin', '$2a$10$wK8fDq0uEGBW7L6z0tP7u.2a8n6oZ9wY1z3u5s7q9y1v3x5z7a9b.', 'superadmin', 'OWN-DEFAULT-SYSTEM', TRUE)
-ON CONFLICT (username) DO NOTHING;
+VALUES ('admin', '$2b$10$8LBsojKFVJ/v0dbPPzQnpuwHR36gqml.85GkwdhqZ4L0u6dz3ErZG', 'superadmin', 'OWN-DEFAULT-SYSTEM', TRUE)
+ON CONFLICT (username) DO UPDATE
+SET password_hash = EXCLUDED.password_hash;
 
 -- ----------------------------------------------------------------------------
 -- 6. Central Settings Key-Value Table
