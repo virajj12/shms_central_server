@@ -341,11 +341,13 @@ app.post(['/api/edge/pair', '/api/edge/request_connection', '/api/fleet/register
     }
 
     // Pass Supabase upload config so the edge can upload images directly
+    const token = result.token || result.auth_token || '';
     return res.json({
       ...result,
       status: result.enrollment_status,
-      auth_token: result.token,
-      pin: req.body?.pairing_pin || '',
+      auth_token: token,
+      token: token,
+      pin: req.body?.pairing_pin || req.body?.pairing_code || '',
       supabase_url: process.env.SUPABASE_URL || '',
       supabase_anon_key:
         process.env.SUPABASE_PUBLISHABLE_KEY ||
