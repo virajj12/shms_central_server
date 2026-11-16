@@ -82,9 +82,9 @@ export default function NodeCard({
 
         {/* Duplex Sync Strip */}
         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
-          <span className={`px-2 py-0.5 rounded border ${duplexConnected ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-zinc-700 bg-zinc-900 text-zinc-500'}`}>
-            <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${duplexConnected ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
-            Duplex {duplexConnected ? 'linked' : 'offline'}
+          <span className={`px-2 py-0.5 rounded border ${isOnline ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-zinc-700 bg-zinc-900 text-zinc-500'}`}>
+            <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+            {isOnline ? 'Duplex linked (3s)' : 'Offline'}
           </span>
           <span className={`px-2 py-0.5 rounded border ${unsynced > 0 ? 'border-amber-700/40 bg-amber-500/10 text-amber-300' : 'border-zinc-700 bg-zinc-900 text-zinc-500'}`}>
             {unsynced} unsynced
@@ -133,8 +133,8 @@ export default function NodeCard({
           <>
             <button
               onClick={() => onRequestSnapshot(node)}
-              disabled={!isOnline || !duplexConnected || cameras.length === 0}
-              title="Capture a live JPEG snapshot from the edge camera"
+              disabled={!isOnline}
+              title={isOnline ? "Capture a live JPEG snapshot from the edge camera" : "Edge appliance is offline"}
               className="flex-1 py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 disabled:opacity-40 disabled:pointer-events-none text-zinc-200 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
             >
               <Camera className="h-3.5 w-3.5 text-emerald-400" />
@@ -143,8 +143,8 @@ export default function NodeCard({
 
             <button
               onClick={() => onTriggerSync(node)}
-              disabled={!isOnline || !duplexConnected}
-              title="Ask the edge to sync pending incidents now"
+              disabled={!isOnline}
+              title={isOnline ? "Ask the edge to sync pending incidents now" : "Edge appliance is offline"}
               className="py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 disabled:opacity-40 disabled:pointer-events-none text-zinc-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors"
             >
               <RefreshCw className="h-3.5 w-3.5 text-sky-400" />

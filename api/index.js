@@ -485,22 +485,25 @@ app.post('/api/edge/command_reply', async (req, res) => {
  */
 app.post('/api/edge/batch_sync', async (req, res) => {
   try {
-    const { edge_id, auth_token, incidents = [] } = req.body || {};
-    if (!edge_id) {
-      return res.status(400).json({ detail: 'edge_id is required' });
+    const edgeId = req.body?.edge_id || req.body?.kitchen_id;
+    const authToken = req.body?.auth_token;
+    const incidents = req.body?.incidents || [];
+    if (!edgeId) {
+      return res.status(400).json({ detail: 'edge_id or kitchen_id is required' });
     }
 
-    const isValid = await db.verifyEdgeToken(edge_id, auth_token);
+    const isValid = await db.verifyEdgeToken(edgeId, authToken);
     if (!isValid) {
       return res.status(403).json({ detail: 'Invalid or missing edge authentication token' });
     }
 
-    const syncedLocalIds = await db.storeBatchIncidents(edge_id, incidents);
+    const syncedLocalIds = await db.storeBatchIncidents(edgeId, incidents);
 
     return res.json({
       success: true,
       synced_count: syncedLocalIds.length,
       synced_ids: syncedLocalIds,
+      synced_local_ids: syncedLocalIds,
       received_count: incidents.length,
       timestamp: new Date().toISOString(),
     });
