@@ -8,6 +8,8 @@ import {
   ShieldCheck,
   UserCheck,
   XCircle,
+  KeyRound,
+  X,
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -18,6 +20,14 @@ export default function Navbar({ overview, user, onLogout }) {
   const [showPending, setShowPending] = useState(false);
   const [copied, setCopied] = useState(false);
   const [loadingPending, setLoadingPending] = useState(false);
+
+  // Pairing PIN Modal State
+  const [showPairingModal, setShowPairingModal] = useState(false);
+  const [pairingHotel, setPairingHotel] = useState('Grand Hotel & Suites');
+  const [pairingKitchen, setPairingKitchen] = useState('Main Prep Kitchen');
+  const [generatedCode, setGeneratedCode] = useState(null);
+  const [generatingPin, setGeneratingPin] = useState(false);
+  const [copiedPin, setCopiedPin] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -94,6 +104,23 @@ export default function Navbar({ overview, user, onLogout }) {
     }
   };
 
+  const handleGeneratePairingCode = async (e) => {
+    e?.preventDefault();
+    setGeneratingPin(true);
+    try {
+      const result = await api.createPairingCode({
+        hotel_name: pairingHotel || 'Grand Hotel & Suites',
+        kitchen_name: pairingKitchen || 'Main Kitchen',
+        ttl_minutes: 60,
+      });
+      setGeneratedCode(result);
+    } catch (err) {
+      alert(`Failed to generate pairing code: ${err.message}`);
+    } finally {
+      setGeneratingPin(false);
+    }
+  };
+
   return (
     <>
       <header className="h-14 border-b border-zinc-800 bg-[#18181c]/90 backdrop-blur sticky top-0 z-40 px-4 sm:px-6 flex items-center justify-between">
@@ -136,6 +163,18 @@ export default function Navbar({ overview, user, onLogout }) {
             ) : (
               <Copy className="h-3.5 w-3.5 text-zinc-500" />
             )}
+          </button>
+
+          <button
+            onClick={() => {
+              setShowPairingModal(true);
+              if (!generatedCode) handleGeneratePairingCode();
+            }}
+            className="h-8 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            title="Generate a Pairing Session Code for a kitchen edge server"
+          >
+            <KeyRound className="h-3.5 w-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Pairing PIN</span>
           </button>
 
           <button
@@ -236,6 +275,84 @@ export default function Navbar({ overview, user, onLogout }) {
               )}
             </div>
           </aside>
+        </div>
+      )}
+      {/* Pairing Session Code Modal */}
+      {showPairingModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <div className="flex items-center gap-2">
+                <KeyRound className="h-5 w-5 text-amber-400" />
+                <h3 className="text-sm font-bold text-white">Kitchen Pairing Session PIN</h3>
+              </div>
+              <button
+                onClick={() => setShowPairingModal(false)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Generate a 6-digit session PIN to share with a kitchen edge computer. When entered in the Edge Server's connection modal, it immediately links and auto-approves.
+            </p>
+
+            {generatedCode ? (
+              <div className="bg-zinc-900 border border-amber-500/30 rounded-xl p-4 text-center space-y-3">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-amber-400/80">Active 6-Digit Pairing PIN</span>
+                <div className="text-3xl font-mono font-bold tracking-widest text-amber-300">
+                  {generatedCode.code}
+                </div>
+                <div className="text-[11px] text-zinc-400">
+                  Valid for 60 minutes &bull; Hotel: <span className="text-zinc-200 font-semibold">{generatedCode.hotel_name}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(generatedCode.code);
+                    setCopiedPin(true);
+                    setTimeout(() => setCopiedPin(false), 2000);
+                  }}
+                  className="w-full py-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  {copiedPin ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  <span>{copiedPin ? 'Copied PIN to Clipboard!' : 'Copy Pairing PIN'}</span>
+                </button>
+              </div>
+            ) : null}
+
+            <form onSubmit={handleGeneratePairingCode} className="space-y-3 pt-2">
+              <div>
+                <label className="text-[11px] font-semibold text-zinc-400 block mb-1">Hotel Branch</label>
+                <input
+                  type="text"
+                  value={pairingHotel}
+                  onChange={(e) => setPairingHotel(e.target.value)}
+                  className="w-full h-8 px-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-white"
+                  placeholder="e.g. Grand Hotel & Suites"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-zinc-400 block mb-1">Kitchen / Section Name</label>
+                <input
+                  type="text"
+                  value={pairingKitchen}
+                  onChange={(e) => setPairingKitchen(e.target.value)}
+                  className="w-full h-8 px-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-white"
+                  placeholder="e.g. Main Prep Kitchen"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={generatingPin}
+                className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${generatingPin ? 'animate-spin' : ''}`} />
+                <span>{generatingPin ? 'Generating...' : 'Generate New PIN'}</span>
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </>

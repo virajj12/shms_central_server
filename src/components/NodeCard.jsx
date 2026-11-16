@@ -1,5 +1,5 @@
-import React from 'react';
-import { Camera, RefreshCw, Sliders, Trash2, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Camera, RefreshCw, Sliders, Trash2, CheckCircle, Copy, Check } from 'lucide-react';
 
 export default function NodeCard({
   node,
@@ -9,6 +9,7 @@ export default function NodeCard({
   onOpenConfig,
   onDelete,
 }) {
+  const [copiedId, setCopiedId] = useState(false);
   const isOnline = node.status === 'online';
   const duplexConnected = Boolean(node.duplex_connected);
   const isPending = node.status === 'pending' || node.enrollment_status === 'pending';
@@ -45,8 +46,29 @@ export default function NodeCard({
         {/* Telemetry Row */}
         <div className="grid grid-cols-3 gap-2 mt-4 p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/80 text-[11px]">
           <div>
-            <span className="text-zinc-500 text-[10px] block">Kitchen ID</span>
-            <span className="font-mono text-zinc-300 truncate block" title={node.id}>{node.id}</span>
+            <span className="text-zinc-500 text-[10px] block">Kitchen Session ID</span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="font-mono text-zinc-200 font-semibold truncate block" title={node.id}>
+                {node.id}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(node.id);
+                  setCopiedId(true);
+                  setTimeout(() => setCopiedId(false), 2000);
+                }}
+                className="p-1 rounded hover:bg-zinc-800 text-zinc-500 hover:text-zinc-200 transition-colors shrink-0"
+                title="Copy Kitchen Session ID"
+              >
+                {copiedId ? (
+                  <Check className="h-3 w-3 text-emerald-400" />
+                ) : (
+                  <Copy className="h-3 w-3" />
+                )}
+              </button>
+            </div>
           </div>
           <div>
             <span className="text-zinc-500 text-[10px] block">Cameras</span>
