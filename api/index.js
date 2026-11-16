@@ -6,6 +6,7 @@ import {
   createSessionToken,
   SESSION_COOKIE_NAME,
   requireAdmin,
+  verifySessionToken,
 } from '../lib/auth.js';
 
 const app = express();
@@ -64,7 +65,7 @@ app.get('/api/auth/me', (req, res) => {
     return res.status(401).json({ detail: 'Not authenticated' });
   }
 
-  const user = require('../lib/auth.js').verifySessionToken(token);
+  const user = verifySessionToken(token);
   if (!user) {
     return res.status(401).json({ detail: 'Session expired' });
   }
