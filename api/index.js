@@ -78,11 +78,99 @@ app.get('/api/auth/me', (req, res) => {
   });
 });
 
+// ── Public Vanity Hotel Lookup ──────────────────────────────────────────────
+app.get('/api/public/hotel/:slug', async (req, res) => {
+  try {
+    const hotel = await db.getHotelBySlug(req.params.slug);
+    if (!hotel) {
+      return res.status(404).json({ exists: false, detail: 'Hotel not found' });
+    }
+    return res.json({
+      exists: true,
+      hotel: {
+        id: hotel.id,
+        name: hotel.name,
+        slug: hotel.slug,
+        status: hotel.status,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// ── Multi-Tenant Hotel Management (Superadmin Only) ─────────────────────────
+app.get('/api/admin/hotels', requireAdmin, async (req, res) => {
+  try {
+    if (!req.user.is_superadmin) {
+      return res.status(403).json({ detail: 'Superadmin privileges required' });
+    }
+    const hotels = await db.listHotels();
+    return res.json(hotels);
+  } catch (err) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+app.post('/api/admin/hotels', requireAdmin, async (req, res) => {
+  try {
+    if (!req.user.is_superadmin) {
+      return res.status(403).json({ detail: 'Superadmin privileges required' });
+    }
+    const result = await db.createHotel(req.body || {});
+    db.logAudit(req.user.sub, 'CREATE_HOTEL', null, `Created hotel ${result.hotel.name} (/@${result.hotel.slug})`);
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ detail: err.message });
+  }
+});
+
+app.put('/api/admin/hotels/:id', requireAdmin, async (req, res) => {
+  try {
+    if (!req.user.is_superadmin) {
+      return res.status(403).json({ detail: 'Superadmin privileges required' });
+    }
+    const hotel = await db.updateHotel(req.params.id, req.body || {});
+    db.logAudit(req.user.sub, 'UPDATE_HOTEL', req.params.id, `Updated hotel ${req.params.id}`);
+    return res.json(hotel);
+  } catch (err) {
+    return res.status(400).json({ detail: err.message });
+  }
+});
+
+app.post('/api/admin/hotels/:id/reset_password', requireAdmin, async (req, res) => {
+  try {
+    if (!req.user.is_superadmin) {
+      return res.status(403).json({ detail: 'Superadmin privileges required' });
+    }
+    const { new_password } = req.body || {};
+    await db.resetHotelAdminPassword(req.params.id, new_password);
+    db.logAudit(req.user.sub, 'RESET_HOTEL_PASSWORD', req.params.id, `Reset password for hotel ${req.params.id}`);
+    return res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    return res.status(400).json({ detail: err.message });
+  }
+});
+
+app.delete('/api/admin/hotels/:id', requireAdmin, async (req, res) => {
+  try {
+    if (!req.user.is_superadmin) {
+      return res.status(403).json({ detail: 'Superadmin privileges required' });
+    }
+    await db.deleteHotel(req.params.id);
+    db.logAudit(req.user.sub, 'DELETE_HOTEL', req.params.id, `Deleted hotel ${req.params.id}`);
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(400).json({ detail: err.message });
+  }
+});
+
 // ── Fleet Overview & KPIs ───────────────────────────────────────────────────
 
 app.get('/api/fleet/overview', requireAdmin, async (req, res) => {
   try {
-    const kpis = await db.getFleetKpis(req.user.owner_id);
+    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
+    const kpis = await db.getFleetKpis(targetOwnerId);
     return res.json(kpis);
   } catch (err) {
     return res.status(500).json({ detail: err.message });
@@ -91,8 +179,9 @@ app.get('/api/fleet/overview', requireAdmin, async (req, res) => {
 
 app.get('/api/fleet/owner_info', requireAdmin, async (req, res) => {
   try {
-    const owner = await db.getOwner(req.user.owner_id);
-    return res.json(owner || { id: req.user.owner_id, company_name: 'Hotel Management' });
+    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || req.user.owner_id) : req.user.owner_id;
+    const owner = await db.getOwner(targetOwnerId);
+    return res.json(owner || { id: targetOwnerId, company_name: 'Hotel Management' });
   } catch (err) {
     return res.status(500).json({ detail: err.message });
   }
@@ -102,7 +191,8 @@ app.get('/api/fleet/owner_info', requireAdmin, async (req, res) => {
 
 app.get('/api/fleet/enrollment/pending', requireAdmin, async (req, res) => {
   try {
-    const pending = await db.listPendingEnrollments(req.user.owner_id);
+    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
+    const pending = await db.listPendingEnrollments(targetOwnerId);
     return res.json({ success: true, edges: pending });
   } catch (err) {
     return res.status(500).json({ detail: err.message });
@@ -134,13 +224,14 @@ app.post('/api/fleet/enrollment/:requestId/reject', requireAdmin, async (req, re
 
 app.post('/api/fleet/pairing_codes', requireAdmin, async (req, res) => {
   try {
-    const { hotel_name, kitchen_name, ttl_minutes = 60 } = req.body || {};
+    const { hotel_name, kitchen_name, ttl_minutes = 60, owner_id } = req.body || {};
     if (!hotel_name) {
       return res.status(400).json({ detail: 'hotel_name is required' });
     }
 
+    const targetOwnerId = req.user.is_superadmin ? (owner_id || req.user.owner_id) : req.user.owner_id;
     const pairing = await db.createPairingCode(
-      req.user.owner_id,
+      targetOwnerId,
       hotel_name,
       kitchen_name || 'Main Kitchen',
       req.user.sub,
@@ -158,7 +249,8 @@ app.post('/api/fleet/pairing_codes', requireAdmin, async (req, res) => {
 
 app.get('/api/fleet/nodes', requireAdmin, async (req, res) => {
   try {
-    const nodes = await db.listNodes(req.user.owner_id);
+    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
+    const nodes = await db.listNodes(targetOwnerId);
     return res.json(nodes);
   } catch (err) {
     return res.status(500).json({ detail: err.message });
@@ -277,8 +369,9 @@ app.post('/api/fleet/nodes/:id/request_snapshot', requireAdmin, async (req, res)
 
 app.get('/api/fleet/violations', requireAdmin, async (req, res) => {
   try {
+    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
     const params = {
-      owner_id: req.user.owner_id,
+      owner_id: targetOwnerId,
       category: req.query.category,
       hotel_name: req.query.hotel_name,
       edge_id: req.query.edge_id,
@@ -303,7 +396,8 @@ app.post('/api/fleet/violations/:id/acknowledge', requireAdmin, async (req, res)
 
 app.get('/api/fleet/analytics', requireAdmin, async (req, res) => {
   try {
-    const data = await db.getAnalytics(req.user.owner_id);
+    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
+    const data = await db.getAnalytics(targetOwnerId);
     return res.json(data);
   } catch (err) {
     return res.status(500).json({ detail: err.message });

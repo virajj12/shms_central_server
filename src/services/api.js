@@ -29,10 +29,30 @@ export const api = {
   getMe: () => 
     fetchJson('/api/auth/me'),
 
+  // Public Vanity Hotel Lookup
+  getPublicHotel: (slug) => fetchJson(`/api/public/hotel/${slug}`),
+
+  // Multi-Tenant Hotels Management (Superadmin Only)
+  getHotels: () => fetchJson('/api/admin/hotels'),
+  createHotel: (payload) =>
+    fetchJson('/api/admin/hotels', { method: 'POST', body: JSON.stringify(payload) }),
+  updateHotel: (id, payload) =>
+    fetchJson(`/api/admin/hotels/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  resetHotelPassword: (id, newPassword) =>
+    fetchJson(`/api/admin/hotels/${id}/reset_password`, {
+      method: 'POST',
+      body: JSON.stringify({ new_password: newPassword }),
+    }),
+  deleteHotel: (id) =>
+    fetchJson(`/api/admin/hotels/${id}`, { method: 'DELETE' }),
+
   // Fleet Overview & Nodes
-  getOverview: () => fetchJson('/api/fleet/overview'),
-  getOwnerInfo: () => fetchJson('/api/fleet/owner_info'),
-  getPendingEnrollments: () => fetchJson('/api/fleet/enrollment/pending'),
+  getOverview: (ownerId = null) =>
+    fetchJson(`/api/fleet/overview${ownerId && ownerId !== 'all' ? `?owner_id=${encodeURIComponent(ownerId)}` : ''}`),
+  getOwnerInfo: (ownerId = null) =>
+    fetchJson(`/api/fleet/owner_info${ownerId && ownerId !== 'all' ? `?owner_id=${encodeURIComponent(ownerId)}` : ''}`),
+  getPendingEnrollments: (ownerId = null) =>
+    fetchJson(`/api/fleet/enrollment/pending${ownerId && ownerId !== 'all' ? `?owner_id=${encodeURIComponent(ownerId)}` : ''}`),
   approveEnrollment: (requestId) =>
     fetchJson(`/api/fleet/enrollment/${requestId}/approve`, { method: 'POST' }),
   rejectEnrollment: (requestId, reason = '') =>
@@ -42,7 +62,8 @@ export const api = {
     }),
   createPairingCode: (payload = {}) =>
     fetchJson('/api/fleet/pairing_codes', { method: 'POST', body: JSON.stringify(payload) }),
-  getNodes: () => fetchJson('/api/fleet/nodes'),
+  getNodes: (ownerId = null) =>
+    fetchJson(`/api/fleet/nodes${ownerId && ownerId !== 'all' ? `?owner_id=${encodeURIComponent(ownerId)}` : ''}`),
   getNode: (id) => fetchJson(`/api/fleet/nodes/${id}`),
   deleteNode: (id) => fetchJson(`/api/fleet/nodes/${id}`, { method: 'DELETE' }),
   pushConfig: (id, payload) => 
@@ -60,6 +81,7 @@ export const api = {
   // Evidence & Violations
   getViolations: (params = {}) => {
     const q = new URLSearchParams();
+    if (params.owner_id && params.owner_id !== 'all') q.append('owner_id', params.owner_id);
     if (params.category && params.category !== 'all') q.append('category', params.category);
     if (params.hotel_name && params.hotel_name !== 'all') q.append('hotel_name', params.hotel_name);
     if (params.edge_id) q.append('edge_id', params.edge_id);
@@ -70,7 +92,8 @@ export const api = {
     fetchJson(`/api/fleet/violations/${id}/acknowledge`, { method: 'POST' }),
 
   // Analytics & Compliance
-  getAnalytics: () => fetchJson('/api/fleet/analytics'),
+  getAnalytics: (ownerId = null) =>
+    fetchJson(`/api/fleet/analytics${ownerId && ownerId !== 'all' ? `?owner_id=${encodeURIComponent(ownerId)}` : ''}`),
 
   // System Settings
   getSettings: () => fetchJson('/api/settings'),

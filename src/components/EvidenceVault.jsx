@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, ZoomIn, X, Check } from 'lucide-react';
 import { api } from '../services/api';
 
-export default function EvidenceVault({ hotels = [], onViolationsChanged }) {
+export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerId = null }) {
   const [violations, setViolations] = useState([]);
   const [selectedHotel, setSelectedHotel] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -11,6 +11,7 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged }) {
   const fetchViolations = async () => {
     try {
       const data = await api.getViolations({
+        owner_id: ownerId,
         category: categoryFilter,
         hotel_name: selectedHotel,
         limit: 80,
@@ -23,7 +24,7 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged }) {
 
   useEffect(() => {
     fetchViolations();
-  }, [selectedHotel, categoryFilter]);
+  }, [selectedHotel, categoryFilter, ownerId]);
 
   const handleAcknowledge = async (id, e) => {
     e.stopPropagation();
