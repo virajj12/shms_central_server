@@ -28,6 +28,21 @@ export const api = {
     fetchJson('/api/auth/logout', { method: 'POST' }),
   getMe: () => 
     fetchJson('/api/auth/me'),
+  requestPasswordReset: (identifier) =>
+    fetchJson('/api/auth/forgot_password/request', {
+      method: 'POST',
+      body: JSON.stringify({ identifier }),
+    }),
+  verifyPasswordReset: (ownerId, otp, newPassword) =>
+    fetchJson('/api/auth/forgot_password/verify', {
+      method: 'POST',
+      body: JSON.stringify({ owner_id: ownerId, otp, new_password: newPassword }),
+    }),
+  testSmtpEmail: (testEmail = '') =>
+    fetchJson('/api/admin/email/test', {
+      method: 'POST',
+      body: JSON.stringify({ test_email: testEmail }),
+    }),
 
   // Public Vanity Hotel Lookup
   getPublicHotel: (slug) => fetchJson(`/api/public/hotel/${slug}`),

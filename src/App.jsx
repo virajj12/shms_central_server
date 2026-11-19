@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   LogOut,
+  ShieldAlert,
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import KpiStrip from './components/KpiStrip';
@@ -20,16 +21,18 @@ import EvidenceVault from './components/EvidenceVault';
 import AnalyticsView from './components/AnalyticsView';
 import SettingsView from './components/SettingsView';
 import LoginView from './components/LoginView';
+import AdminLoginView from './components/AdminLoginView';
 import HotelsManagerView from './components/HotelsManagerView';
 import { api } from './services/api';
 
-const RESERVED_PATHS = new Set(['', 'login', 'admin', 'evidence', 'analytics', 'settings', 'nodes']);
+const RESERVED_PATHS = new Set(['', 'login', 'admin', 'admin/login', 'evidence', 'analytics', 'settings', 'nodes']);
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecking, setAuthChecking] = useState(true);
 
-  // Multi-Tenancy & Vanity URL State
+  // Multi-Tenancy & Routing State
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [currentHotelPortal, setCurrentHotelPortal] = useState(null);
   const [hotelNotFound, setHotelNotFound] = useState(false);
   const [hotels, setHotels] = useState([]);
@@ -47,9 +50,13 @@ export default function App() {
   const [snapshotNode, setSnapshotNode] = useState(null);
   const [configNode, setConfigNode] = useState(null);
 
-  // Detect vanity URL (e.g. /grand-hotel)
+  const isAdminRoute = currentPath === '/admin' || currentPath.startsWith('/admin/');
+
+  // Detect vanity URL (e.g. /grand-hotel or /ritz-carlton)
   const resolveVanityRoute = useCallback(async () => {
     const rawPath = window.location.pathname.replace(/^\/+|\/+$/g, '');
+    setCurrentPath(window.location.pathname);
+
     if (rawPath && !RESERVED_PATHS.has(rawPath.toLowerCase())) {
       try {
         const res = await api.getPublicHotel(rawPath);
@@ -71,7 +78,7 @@ export default function App() {
     return null;
   }, []);
 
-  // Check auth session & vanity route on load
+  // Check auth session & route on load
   useEffect(() => {
     const init = async () => {
       try {
@@ -83,8 +90,7 @@ export default function App() {
         if (me && me.user) {
           setCurrentUser(me);
           if (me.is_superadmin) {
-            // If superadmin visits root, default to hotels management
-            if (!portal) {
+            if (window.location.pathname.startsWith('/admin') || !portal) {
               setActiveTab('hotels');
             }
           }
@@ -201,7 +207,19 @@ export default function App() {
     );
   }
 
-  // 404: Vanity hotel URL not found
+  // 1. Separate Admin Login (/admin/login or /admin when unauthenticated)
+  if (isAdminRoute && !currentUser) {
+    return (
+      <AdminLoginView
+        onLoginSuccess={(res) => {
+          setCurrentUser(res);
+          setActiveTab('hotels');
+        }}
+      />
+    );
+  }
+
+  // 2. 404: Vanity hotel URL not found
   if (hotelNotFound) {
     return (
       <div className="min-h-screen bg-[#0f0f12] text-zinc-100 flex items-center justify-center p-4">
@@ -209,17 +227,17 @@ export default function App() {
           <div className="h-12 w-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-amber-400">
             <Building2 className="h-6 w-6" />
           </div>
-          <h1 className="text-xl font-bold text-white">Hotel Portal Not Found</h1>
+          <h1 className="text-xl font-bold text-white">Hotel Endpoint Not Found</h1>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            The hotel vanity link <code className="text-emerald-400">{window.location.pathname}</code> does not match any registered hotel organization.
+            The endpoint <code className="text-emerald-400">{window.location.pathname}</code> does not match any registered hotel organization.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex items-center justify-center gap-2">
             <a
               href="/"
               className="inline-flex items-center gap-2 py-2 px-4 bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs rounded-lg transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Go to Central Portal</span>
+              <span>Hotel Portal Sign In</span>
             </a>
           </div>
         </div>
@@ -227,26 +245,55 @@ export default function App() {
     );
   }
 
-  // Not logged in -> Show login view (branded for vanity hotel if present)
+  // 3. Normal Hotel Login Page (at / or /login)
   if (!currentUser) {
     return (
       <LoginView
         hotel={currentHotelPortal}
         onLoginSuccess={(res) => {
           setCurrentUser(res);
-          if (res.is_superadmin && !currentHotelPortal) {
+          if (res.is_superadmin) {
             setActiveTab('hotels');
+          } else {
+            setActiveTab('nodes');
           }
-        }}
-        onClearHotel={() => {
-          window.history.pushState({}, '', '/');
-          setCurrentHotelPortal(null);
         }}
       />
     );
   }
 
-  // Check unauthorized access if user is logged in to a DIFFERENT hotel than the vanity URL
+  // 4. Access Denied: Hotel owner trying to access Operator Console (/admin)
+  if (isAdminRoute && !currentUser.is_superadmin) {
+    return (
+      <div className="min-h-screen bg-[#0f0f12] text-zinc-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#18181c] border border-zinc-800 rounded-2xl p-8 text-center space-y-4 shadow-2xl">
+          <div className="h-12 w-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto text-rose-400">
+            <ShieldAlert className="h-6 w-6" />
+          </div>
+          <h1 className="text-lg font-bold text-white">Platform Operator Console Restricted</h1>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            You are signed in as a hotel owner (<code className="text-emerald-400">{currentUser.user}</code>). The operator console is reserved for the Service Provider.
+          </p>
+          <div className="pt-2 flex items-center justify-center gap-2">
+            <a
+              href="/"
+              className="py-2 px-4 bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs rounded-lg transition-colors"
+            >
+              Go to My Hotel Dashboard
+            </a>
+            <button
+              onClick={handleLogout}
+              className="py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs rounded-lg transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 5. Access Denied: Logged into hotel A, but browsing hotel B's vanity link
   const isUnauthorizedTenant =
     currentHotelPortal &&
     !currentUser.is_superadmin &&
@@ -261,7 +308,7 @@ export default function App() {
           </div>
           <h1 className="text-lg font-bold text-white">Access Denied for this Hotel</h1>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            You are signed in as <code className="text-emerald-400">{currentUser.user}</code>, which belongs to another organization. You do not have permission to manage <strong className="text-white">{currentHotelPortal.name}</strong>.
+            You are signed in as <code className="text-emerald-400">{currentUser.user}</code>, which belongs to another organization. You do not have permission to view <strong className="text-white">{currentHotelPortal.name}</strong>.
           </p>
           <div className="pt-2 flex items-center justify-center gap-2">
             <button
@@ -287,26 +334,29 @@ export default function App() {
 
   return (
     <div className="bg-[#0f0f12] text-zinc-100 min-h-screen flex flex-col selection:bg-white selection:text-black">
-      {/* Superadmin Impersonation / Vanity Header Alert */}
-      {currentHotelPortal && currentUser.is_superadmin && (
-        <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-1.5 text-xs text-emerald-300 flex items-center justify-between">
+      {/* Superadmin Notification Banner */}
+      {currentUser.is_superadmin && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-1.5 text-xs text-amber-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
             <span>
-              Viewing as Superadmin: <strong>{currentHotelPortal.name}</strong> Portal (<code className="font-mono font-semibold">/{currentHotelPortal.slug}</code>)
+              <strong>Platform Service Operator Mode:</strong> You are managing client hotel organizations and provisioning endpoints.
             </span>
           </div>
-          <button
-            onClick={() => {
-              window.history.pushState({}, '', '/');
-              setCurrentHotelPortal(null);
-              setSelectedHotelId('all');
-              setActiveTab('hotels');
-            }}
-            className="text-[11px] font-semibold text-emerald-400 hover:text-white underline"
-          >
-            Return to Master Directory
-          </button>
+          {currentHotelPortal && (
+            <button
+              onClick={() => {
+                window.history.pushState({}, '', '/admin');
+                setCurrentPath('/admin');
+                setCurrentHotelPortal(null);
+                setSelectedHotelId('all');
+                setActiveTab('hotels');
+              }}
+              className="text-[11px] font-semibold text-amber-400 hover:text-white underline"
+            >
+              Return to Operator Directory
+            </button>
+          )}
         </div>
       )}
 
@@ -329,7 +379,7 @@ export default function App() {
       {/* Secondary Tab Bar */}
       <div className="border-b border-zinc-800/80 bg-[#141418] px-4 sm:px-6 py-2 flex items-center justify-between">
         <div className="flex items-center gap-1 overflow-x-auto">
-          {/* Superadmin Hotels Directory Tab */}
+          {/* Operator Hotels Directory Tab (Superadmin Only) */}
           {currentUser.is_superadmin && !currentHotelPortal && (
             <button
               onClick={() => setActiveTab('hotels')}
@@ -340,7 +390,7 @@ export default function App() {
               }`}
             >
               <Building2 className="h-3.5 w-3.5" />
-              <span>Hotels Directory</span>
+              <span>Hotels &amp; Endpoints Directory</span>
             </button>
           )}
 
@@ -416,7 +466,7 @@ export default function App() {
 
       {/* Main Tab Content */}
       <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
-        {/* Superadmin Hotels Directory */}
+        {/* Operator Hotels Directory */}
         {activeTab === 'hotels' && currentUser.is_superadmin && !currentHotelPortal && (
           <HotelsManagerView
             hotels={hotels}
@@ -463,7 +513,7 @@ export default function App() {
                     No Edge Devices Registered Yet
                   </div>
                   <div className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
-                    When you run the Smart Hotel Monitoring edge system with this hotel's connection, it will automatically appear here.
+                    When you run the Smart Hotel Monitoring edge system for this hotel, it will automatically appear here.
                   </div>
                 </div>
               ) : (

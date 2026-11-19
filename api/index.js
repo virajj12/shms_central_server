@@ -1,13 +1,15 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import { db, DEFAULT_OWNER_ID } from '../lib/db.js';
+import { db, DEFAULT_OWNER_ID, slugify } from '../lib/db.js';
 import {
   createSessionToken,
   SESSION_COOKIE_NAME,
   requireAdmin,
   verifySessionToken,
 } from '../lib/auth.js';
+import { sendPasswordResetEmail, getEmailTransporter } from '../lib/email.js';
+import { supabase } from '../lib/supabase.js';
 
 const app = express();
 
@@ -27,7 +29,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     const admin = await db.authenticateAdmin(username, password);
     if (!admin) {
-      return res.status(401).json({ detail: 'Invalid username or password' });
+      return res.status(401).json({ detail: 'Invalid username, endpoint, or password' });
     }
 
     const token = createSessionToken(admin);
@@ -49,6 +51,177 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (err) {
     console.error('Login error:', err);
     return res.status(500).json({ detail: err.message || 'Internal server error' });
+  }
+});
+
+// ── Forgot Password Flow (Run via SMTP App Password) ─────────────────────────
+
+app.post('/api/auth/forgot_password/request', async (req, res) => {
+  try {
+    const clean = String(req.body?.identifier || '').trim();
+    if (!clean) {
+      return res.status(400).json({ detail: 'Please enter your hotel endpoint handle or username.' });
+    }
+
+    // 1. Look up hotel by slug or username or email
+    let hotel = await db.getHotelBySlug(clean);
+    let owner = null;
+    if (hotel) {
+      owner = await db.getOwner(hotel.id);
+    } else {
+      const { data: user } = await supabase
+        .from('admin_users')
+        .select('*')
+        .ilike('username', clean)
+        .maybeSingle();
+      if (user) {
+        owner = await db.getOwner(user.owner_id);
+      }
+    }
+
+    if (!owner && clean.includes('@')) {
+      const { data: byEmail } = await supabase
+        .from('owners')
+        .select('*')
+        .ilike('contact_email', clean)
+        .maybeSingle();
+      if (byEmail) owner = byEmail;
+    }
+
+    if (!owner) {
+      return res.status(404).json({
+        detail: `No registered hotel found for endpoint "${clean}". Please verify your endpoint handle with your service provider.`,
+      });
+    }
+
+    // 2. Generate 6-digit OTP (expires in 15 mins)
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const expiresAt = Date.now() + 15 * 60 * 1000;
+
+    const otpKey = `pwd_reset_${owner.id}`;
+    await db.setSettings({
+      [otpKey]: JSON.stringify({ otp, expiresAt, owner_id: owner.id }),
+    });
+
+    const registry = await db.getSlugRegistry();
+    const slug =
+      Object.entries(registry).find(([s, id]) => id === owner.id)?.[0] ||
+      slugify(owner.company_name);
+
+    // 3. Mask email
+    const email = owner.contact_email || 'admin@hotel.local';
+    const [localPart, domain] = email.split('@');
+    const maskedLocal =
+      localPart.length > 2 ? `${localPart.slice(0, 2)}***` : `${localPart}***`;
+    const maskedEmail = `${maskedLocal}@${domain || 'hotel.local'}`;
+
+    // 4. Send email via SMTP App Password
+    const sendResult = await sendPasswordResetEmail({
+      toEmail: email,
+      hotelName: owner.company_name,
+      hotelSlug: slug,
+      otpCode: otp,
+    });
+
+    db.logAudit(
+      'SYSTEM',
+      'FORGOT_PASSWORD_REQUEST',
+      null,
+      `Password reset requested for hotel ${owner.company_name} (${email})`
+    );
+
+    return res.json({
+      success: true,
+      message: sendResult.sent
+        ? `A 6-digit verification code has been sent to your registered email (${maskedEmail})`
+        : `Verification code generated. ${sendResult.reason || ''}`,
+      masked_email: maskedEmail,
+      owner_id: owner.id,
+      sent: Boolean(sendResult.sent),
+      demo_otp: sendResult.demo_otp || null, // Provided if SMTP not configured so dev/setup isn't blocked
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ detail: err.message || 'Failed to process password reset request' });
+  }
+});
+
+app.post('/api/auth/forgot_password/verify', async (req, res) => {
+  try {
+    const { owner_id, otp, new_password } = req.body || {};
+    if (!owner_id || !otp || !new_password) {
+      return res.status(400).json({ detail: 'Hotel Owner ID, OTP, and new password are required' });
+    }
+    if (String(new_password).length < 5) {
+      return res.status(400).json({ detail: 'New password must be at least 5 characters long' });
+    }
+
+    const settings = await db.getSettings();
+    const raw = settings[`pwd_reset_${owner_id}`];
+    if (!raw) {
+      return res.status(400).json({
+        detail: 'No active password reset request found or session expired. Please request a new code.',
+      });
+    }
+
+    let parsed = null;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return res.status(400).json({ detail: 'Invalid reset session' });
+    }
+
+    if (Date.now() > parsed.expiresAt) {
+      return res.status(400).json({
+        detail: 'Verification code has expired (15 minute limit). Please request a new code.',
+      });
+    }
+
+    if (String(parsed.otp).trim() !== String(otp).trim()) {
+      return res.status(400).json({ detail: 'Incorrect 6-digit verification code. Please check and try again.' });
+    }
+
+    // Reset password
+    await db.resetHotelAdminPassword(owner_id, new_password);
+
+    // Clear OTP
+    await db.setSettings({ [`pwd_reset_${owner_id}`]: '' });
+
+    db.logAudit(
+      'USER',
+      'RESET_PASSWORD_VERIFY',
+      null,
+      `Password successfully reset via OTP for owner ${owner_id}`
+    );
+
+    return res.json({
+      success: true,
+      message: 'Password updated successfully! You can now sign in with your new password.',
+    });
+  } catch (err) {
+    return res.status(500).json({ detail: err.message || 'Failed to reset password' });
+  }
+});
+
+// Test SMTP App Password configuration
+app.post('/api/admin/email/test', requireAdmin, async (req, res) => {
+  try {
+    if (!req.user.is_superadmin) {
+      return res.status(403).json({ detail: 'Superadmin privileges required' });
+    }
+    const { test_email } = req.body || {};
+    const targetEmail = test_email || req.body?.smtp_user || 'test@example.com';
+
+    const sendResult = await sendPasswordResetEmail({
+      toEmail: targetEmail,
+      hotelName: 'Test Hotel Organization',
+      hotelSlug: 'test-hotel',
+      otpCode: '123456',
+    });
+
+    return res.json(sendResult);
+  } catch (err) {
+    return res.status(500).json({ detail: err.message });
   }
 });
 
