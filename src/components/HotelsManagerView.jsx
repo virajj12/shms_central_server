@@ -448,7 +448,7 @@ export default function HotelsManagerView({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. The Oberoi Grand"
+                  placeholder="Enter hotel company or brand name"
                   value={formData.company_name}
                   onChange={handleNameChange}
                   className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
@@ -464,7 +464,7 @@ export default function HotelsManagerView({
                   <input
                     type="text"
                     required
-                    placeholder="oberoi-grand"
+                    placeholder="hotel-endpoint-slug"
                     value={formData.slug}
                     onChange={(e) =>
                       setFormData({
@@ -490,7 +490,7 @@ export default function HotelsManagerView({
                   <input
                     type="text"
                     required
-                    placeholder="oberoi_admin"
+                    placeholder="admin_username"
                     value={formData.admin_username}
                     onChange={(e) =>
                       setFormData({

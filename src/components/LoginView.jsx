@@ -26,7 +26,6 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
   const [forgotIdentifier, setForgotIdentifier] = useState(hotel ? hotel.slug : '');
   const [forgotOwnerId, setForgotOwnerId] = useState('');
   const [maskedEmail, setMaskedEmail] = useState('');
-  const [demoOtp, setDemoOtp] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
@@ -58,9 +57,6 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
       const res = await api.requestPasswordReset(forgotIdentifier);
       setForgotOwnerId(res.owner_id);
       setMaskedEmail(res.masked_email);
-      if (res.demo_otp) {
-        setDemoOtp(res.demo_otp);
-      }
       setForgotStep(2);
       setForgotSuccess(res.message);
     } catch (err) {
@@ -83,7 +79,6 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
         setForgotStep(1);
         setForgotError('');
         setForgotSuccess('');
-        setDemoOtp('');
         setOtpCode('');
         setNewPassword('');
       }, 2000);
@@ -132,7 +127,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. grand-hotel or ritz-carlton"
+                  placeholder="Enter hotel endpoint (e.g. your-hotel)"
                   className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors font-mono"
                 />
               </div>
@@ -153,7 +148,6 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                     setForgotStep(1);
                     setForgotError('');
                     setForgotSuccess('');
-                    setDemoOtp('');
                     setShowForgotModal(true);
                   }}
                   className="text-[11px] text-emerald-400 hover:text-emerald-300 hover:underline"
@@ -234,20 +228,10 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
               </div>
             )}
 
-            {demoOtp && (
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs space-y-1 font-mono">
-                <span className="font-bold block">Verification Code (Preview):</span>
-                <span className="text-lg font-bold text-white tracking-widest">{demoOtp}</span>
-                <span className="text-[10px] text-amber-400/80 block">
-                  (Configure your SMTP App Password in Admin Settings to deliver directly via email)
-                </span>
-              </div>
-            )}
-
             {forgotStep === 1 ? (
               <form onSubmit={handleRequestOtp} className="space-y-3.5 text-xs">
                 <p className="text-zinc-400 text-xs leading-relaxed">
-                  Enter your Hotel Endpoint handle (e.g. <code className="text-emerald-400 font-mono">grand-hotel</code>) or registered contact email. We will send a 6-digit verification code to your registered email.
+                  Enter your Hotel Endpoint handle or registered contact email. We will send a 6-digit verification code to your registered email address.
                 </p>
 
                 <div>
@@ -257,7 +241,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. grand-hotel or ritz-carlton"
+                    placeholder="e.g. your-hotel"
                     value={forgotIdentifier}
                     onChange={(e) => setForgotIdentifier(e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"

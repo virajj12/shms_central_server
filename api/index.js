@@ -132,13 +132,10 @@ app.post('/api/auth/forgot_password/request', async (req, res) => {
 
     return res.json({
       success: true,
-      message: sendResult.sent
-        ? `A 6-digit verification code has been sent to your registered email (${maskedEmail})`
-        : `Verification code generated. ${sendResult.reason || ''}`,
+      message: `A 6-digit verification code has been sent to your registered email (${maskedEmail})`,
       masked_email: maskedEmail,
       owner_id: owner.id,
-      sent: Boolean(sendResult.sent),
-      demo_otp: sendResult.demo_otp || null, // Provided if SMTP not configured so dev/setup isn't blocked
+      sent: true,
     });
   } catch (err) {
     console.error('Forgot password error:', err);

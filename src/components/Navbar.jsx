@@ -83,7 +83,7 @@ export default function Navbar({
       const h = hotels.find((item) => item.id === selectedHotelId);
       if (h) setPairingHotel(h.name);
     } else {
-      setPairingHotel('Grand Hotel & Suites');
+      setPairingHotel(ownerInfo?.company_name || '');
     }
   }, [currentHotel, selectedHotelId, hotels]);
 
@@ -449,7 +449,7 @@ export default function Navbar({
                   value={pairingHotel}
                   onChange={(e) => setPairingHotel(e.target.value)}
                   className="w-full h-8 px-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-white"
-                  placeholder="e.g. Grand Hotel & Suites"
+                  placeholder="Enter hotel branch name"
                 />
               </div>
               <div>
