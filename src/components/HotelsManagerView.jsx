@@ -377,9 +377,9 @@ export default function HotelsManagerView({
                     </div>
 
                     <div>
-                      <span className="text-zinc-500 text-[10px] block">Contact / Admin</span>
-                      <span className="font-mono text-zinc-300 font-semibold block mt-0.5 truncate" title={hotel.contact_email || hotel.admin_username || 'N/A'}>
-                        {hotel.contact_email || hotel.admin_username || 'admin'}
+                      <span className="text-zinc-500 text-[10px] block">Owner Login Handle</span>
+                      <span className="font-mono text-emerald-400 font-semibold block mt-0.5 truncate" title={`Sign in with username: ${hotel.admin_username || hotel.slug}`}>
+                        {hotel.admin_username || hotel.slug}
                       </span>
                     </div>
                   </div>

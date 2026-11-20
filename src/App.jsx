@@ -295,21 +295,36 @@ export default function App() {
           </div>
           <h1 className="text-lg font-bold text-white">Hotel Endpoint Access Restricted</h1>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            You are signed in as a Platform Administrator (<code className="text-amber-400">{currentUser.user}</code>). Platform administrators can only manage hotel accounts from the Operator Console (<code className="text-emerald-400">/admin</code>) and cannot access client hotel endpoints.
+            You are signed in as the Platform Operator (<code className="text-amber-400">{currentUser.user}</code>).
+            Platform operators manage hotel accounts from the Operator Console (<code className="text-emerald-400">/admin</code>) and cannot access client surveillance feeds directly.
           </p>
-          <div className="pt-2 flex items-center justify-center gap-2">
-            <a
-              href="/admin"
-              className="py-2 px-4 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs rounded-lg transition-colors"
-            >
-              Return to Operator Console
-            </a>
+          <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-left text-xs space-y-1.5">
+            <div className="text-zinc-300 font-semibold flex items-center gap-1.5">
+              <Building2 className="h-4 w-4 text-emerald-400" />
+              <span>{currentHotelPortal.name} Client Portal</span>
+            </div>
+            <div className="text-zinc-400 text-[11px]">
+              To manage this hotel's branches, cameras, and pairing PINs, sign in with this hotel's owner account:
+            </div>
+            <div className="text-[11px] font-mono bg-zinc-950 p-2 rounded-lg border border-zinc-800 text-zinc-300">
+              Username: <span className="text-emerald-400 font-bold">{currentHotelPortal.slug}</span><br />
+              Default Password: <span className="text-amber-300 font-bold">grand123</span> <span className="text-zinc-500">(or set in /admin)</span>
+            </div>
+          </div>
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
             <button
               onClick={handleLogout}
-              className="py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs rounded-lg transition-colors"
+              className="w-full sm:w-auto py-2 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"
             >
-              Sign Out
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Switch to Hotel Login</span>
             </button>
+            <a
+              href="/admin"
+              className="w-full sm:w-auto py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs rounded-lg transition-colors text-center"
+            >
+              Operator Console (/admin)
+            </a>
           </div>
         </div>
       </div>
