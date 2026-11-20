@@ -12,6 +12,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 
 export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerId = null }) {
   const [violations, setViolations] = useState([]);
@@ -61,16 +68,17 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerI
 
         <div className="flex items-center gap-2">
           {/* Hotel Filter */}
-          <select 
-            value={selectedHotel} 
-            onChange={(e) => setSelectedHotel(e.target.value)}
-            className="h-8 px-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-zinc-300 focus:outline-none"
-          >
-            <option value="all">All Hotel Branches</option>
-            {hotels.map((h) => (
-              <option key={h} value={h}>{h}</option>
-            ))}
-          </select>
+          <Select value={selectedHotel} onValueChange={setSelectedHotel}>
+            <SelectTrigger className="w-[180px] h-8">
+              <SelectValue placeholder="All Hotel Branches" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Hotel Branches</SelectItem>
+              {hotels.map((h) => (
+                <SelectItem key={h} value={h}>{h}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Category Tabs */}
           <Tabs value={categoryFilter} onValueChange={setCategoryFilter}>

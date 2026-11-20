@@ -48,6 +48,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function HotelsManagerView({
   hotels = [],
@@ -496,10 +497,10 @@ export default function HotelsManagerView({
           </DialogHeader>
 
           {createError && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{createError}</span>
-            </div>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{createError}</AlertDescription>
+            </Alert>
           )}
 
           <form onSubmit={handleCreateHotel} className="space-y-3.5 text-xs">
@@ -667,17 +668,17 @@ export default function HotelsManagerView({
             </DialogHeader>
 
             {resetError && (
-              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{resetError}</span>
-              </div>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{resetError}</AlertDescription>
+              </Alert>
             )}
 
             {resetSuccess && (
-              <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
-                <span>{resetSuccess}</span>
-              </div>
+              <Alert variant="success">
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertDescription>{resetSuccess}</AlertDescription>
+              </Alert>
             )}
 
             <form onSubmit={handleResetPassword} className="space-y-3 text-xs">
@@ -735,17 +736,17 @@ export default function HotelsManagerView({
             </DialogHeader>
 
             {editError && (
-              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{editError}</span>
-              </div>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{editError}</AlertDescription>
+              </Alert>
             )}
 
             {editSuccess && (
-              <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
-                <span>{editSuccess}</span>
-              </div>
+              <Alert variant="success">
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertDescription>{editSuccess}</AlertDescription>
+              </Alert>
             )}
 
             <form onSubmit={handleUpdateHotel} className="space-y-3.5 text-xs">

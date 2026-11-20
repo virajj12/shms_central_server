@@ -8,6 +8,14 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 
 export default function AnalyticsView({ analytics = {} }) {
   const chartDailyRef = useRef(null);
@@ -160,38 +168,38 @@ export default function AnalyticsView({ analytics = {} }) {
           <CardTitle className="text-xs font-bold text-white">Hotel Branch Risk Ranking</CardTitle>
           <CardDescription className="text-[10px] text-zinc-500">Ranked by total compliance infractions</CardDescription>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">
-                <th className="py-2 px-3">Hotel Branch</th>
-                <th className="py-2 px-3">Pest Incursions</th>
-                <th className="py-2 px-3">Hygiene Breaches</th>
-                <th className="py-2 px-3">Total Violations</th>
-              </tr>
-            </thead>
-            <tbody>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Hotel Branch</TableHead>
+                <TableHead>Pest Incursions</TableHead>
+                <TableHead>Hygiene Breaches</TableHead>
+                <TableHead>Total Violations</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {ranking.length === 0 ? (
-                <tr>
-                  <td colSpan="4" className="text-center py-6 text-zinc-500 text-xs">
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-6 text-zinc-500">
                     No branch incidents recorded yet.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 ranking.map((r, idx) => (
-                  <tr key={r.hotel_name || idx} className="border-b border-zinc-800/60 hover:bg-zinc-900/40 text-xs">
-                    <td className="py-2.5 px-3 font-semibold text-white flex items-center gap-2">
+                  <TableRow key={r.hotel_name || idx}>
+                    <TableCell className="font-semibold text-white flex items-center gap-2">
                       <span className="text-[10px] text-zinc-500 font-mono">#{idx + 1}</span>
                       <span>{r.hotel_name}</span>
-                    </td>
-                    <td className="py-2.5 px-3 font-mono font-bold text-rose-400">{r.pests}</td>
-                    <td className="py-2.5 px-3 font-mono font-bold text-amber-400">{r.hygiene}</td>
-                    <td className="py-2.5 px-3 font-mono font-bold text-white">{r.total_violations}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-rose-400">{r.pests}</TableCell>
+                    <TableCell className="font-mono font-bold text-amber-400">{r.hygiene}</TableCell>
+                    <TableCell className="font-mono font-bold text-white">{r.total_violations}</TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

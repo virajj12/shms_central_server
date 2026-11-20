@@ -25,6 +25,11 @@ import AdminLoginView from './components/AdminLoginView';
 import HotelsManagerView from './components/HotelsManagerView';
 import { api } from './services/api';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const RESERVED_PATHS = new Set(['', 'login', 'admin', 'admin/login', 'evidence', 'analytics', 'settings', 'nodes']);
 
@@ -218,8 +223,21 @@ export default function App() {
 
   if (authChecking) {
     return (
-      <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center text-zinc-500 text-xs font-mono">
-        Authenticating Central Session...
+      <div className="min-h-screen bg-[#0f0f12] p-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-9 w-52" />
+          <Skeleton className="h-9 w-36" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-56 w-full" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -338,7 +356,7 @@ export default function App() {
   if (currentHotelPortal && currentUser.is_superadmin) {
     return (
       <div className="min-h-screen bg-[#0f0f12] text-zinc-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-[#18181c] border border-zinc-800 rounded-2xl p-8 text-center space-y-4 shadow-2xl">
+        <Card className="max-w-md w-full p-8 text-center space-y-4 shadow-2xl">
           <div className="h-12 w-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
             <ShieldAlert className="h-6 w-6" />
           </div>
@@ -361,21 +379,23 @@ export default function App() {
             </div>
           </div>
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
-            <button
+            <Button
+              variant="emerald"
               onClick={handleLogout}
-              className="w-full sm:w-auto py-2 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Switch to Hotel Login</span>
-            </button>
-            <a
-              href="/admin"
-              className="w-full sm:w-auto py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs rounded-lg transition-colors text-center"
+            </Button>
+            <Button
+              variant="outline"
+              asChild
+              className="w-full sm:w-auto"
             >
-              Operator Console (/admin)
-            </a>
+              <a href="/admin">Operator Console (/admin)</a>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -389,7 +409,7 @@ export default function App() {
   if (isUnauthorizedTenant) {
     return (
       <div className="min-h-screen bg-[#0f0f12] text-zinc-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-[#18181c] border border-zinc-800 rounded-2xl p-8 text-center space-y-4 shadow-2xl">
+        <Card className="max-w-md w-full p-8 text-center space-y-4 shadow-2xl">
           <div className="h-12 w-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto text-rose-400">
             <AlertTriangle className="h-6 w-6" />
           </div>
@@ -398,21 +418,22 @@ export default function App() {
             You are signed in as <code className="text-emerald-400">{currentUser.user}</code>, which belongs to another organization. You do not have permission to view <strong className="text-white">{currentHotelPortal.name}</strong>.
           </p>
           <div className="pt-2 flex items-center justify-center gap-2">
-            <button
+            <Button
+              variant="outline"
               onClick={handleLogout}
-              className="py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs rounded-lg transition-colors flex items-center gap-1.5"
+              className="flex items-center gap-1.5"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Sign Out &amp; Switch Account</span>
-            </button>
-            <a
-              href="/"
-              className="py-2 px-4 bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs rounded-lg transition-colors"
+            </Button>
+            <Button
+              variant="default"
+              asChild
             >
-              My Dashboard
-            </a>
+              <a href="/">My Dashboard</a>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -420,7 +441,8 @@ export default function App() {
   const hotelNames = Array.from(new Set(nodes.map((n) => n.hotel_name).filter(Boolean)));
 
   return (
-    <div className="bg-[#0f0f12] text-zinc-100 min-h-screen flex flex-col selection:bg-white selection:text-black">
+    <TooltipProvider delayDuration={200}>
+      <div className="bg-[#0f0f12] text-zinc-100 min-h-screen flex flex-col selection:bg-white selection:text-black">
       {/* Main Navbar */}
       <Navbar
         overview={overview}
@@ -583,5 +605,6 @@ export default function App() {
         onSuccess={refreshData}
       />
     </div>
+    </TooltipProvider>
   );
 }
