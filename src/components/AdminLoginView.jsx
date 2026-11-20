@@ -12,6 +12,8 @@ import { api } from '../services/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function AdminLoginView({ onLoginSuccess }) {
   const [username, setUsername] = useState('admin');
@@ -71,35 +73,37 @@ export default function AdminLoginView({ onLoginSuccess }) {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300">
+              <Label htmlFor="admin-username">
                 Operator Username
-              </label>
+              </Label>
               <div className="relative">
-                <User className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-                <input
+                <User className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500 pointer-events-none" />
+                <Input
+                  id="admin-username"
                   type="text"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin"
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500 transition-colors font-mono"
+                  className="pl-9 font-mono focus-visible:border-amber-500 focus-visible:ring-amber-500"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300">
+              <Label htmlFor="admin-password">
                 Operator Master Password
-              </label>
+              </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-                <input
+                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500 pointer-events-none" />
+                <Input
+                  id="admin-password"
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500 transition-colors font-mono"
+                  className="pl-9 font-mono focus-visible:border-amber-500 focus-visible:ring-amber-500"
                 />
               </div>
             </div>

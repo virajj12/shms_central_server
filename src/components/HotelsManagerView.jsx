@@ -17,6 +17,7 @@ import {
   Loader2,
   Sparkles,
   Settings,
+  MoreVertical,
 } from 'lucide-react';
 import { api } from '../services/api';
 import {
@@ -37,6 +38,16 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 export default function HotelsManagerView({
   hotels = [],
@@ -280,21 +291,21 @@ export default function HotelsManagerView({
       </div>
 
       {/* Filter / Search Bar */}
-      <div className="flex items-center gap-2 bg-[#18181c] border border-zinc-800 rounded-xl px-3 py-2">
-        <Search className="h-4 w-4 text-zinc-500 shrink-0" />
-        <input
+      <div className="relative flex items-center">
+        <Search className="absolute left-3 h-4 w-4 text-zinc-500 pointer-events-none" />
+        <Input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by hotel name, slug (e.g. /grand-hotel), or admin username..."
-          className="bg-transparent border-none text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none w-full"
+          className="pl-9 pr-14 h-10 bg-[#18181c]"
         />
         {search && (
           <Button
             variant="ghost"
             size="xs"
             onClick={() => setSearch('')}
-            className="text-zinc-500 hover:text-zinc-300"
+            className="absolute right-2 text-zinc-500 hover:text-zinc-300"
           >
             Clear
           </Button>
@@ -426,41 +437,44 @@ export default function HotelsManagerView({
                     <span>Edit Quota</span>
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    onClick={() => {
-                      setResetModalHotel(hotel);
-                      setNewPassword('');
-                      setResetError('');
-                      setResetSuccess('');
-                    }}
-                    title="Reset Hotel Owner Password"
-                  >
-                    <KeyRound className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    onClick={() => handleToggleStatus(hotel)}
-                    className={isSuspended ? 'text-amber-400 hover:text-amber-300' : 'text-zinc-400 hover:text-zinc-200'}
-                    title={isSuspended ? 'Activate Hotel' : 'Suspend Hotel'}
-                  >
-                    <Power className="h-4 w-4" />
-                  </Button>
-
-                  {hotel.id !== 'OWN-DEFAULT-SYSTEM' && (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => handleDeleteHotel(hotel)}
-                      className="text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10"
-                      title="Delete Hotel"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon-sm" title="More Options">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuLabel>Hotel Management</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setResetModalHotel(hotel);
+                          setNewPassword('');
+                          setResetError('');
+                          setResetSuccess('');
+                        }}
+                      >
+                        <KeyRound className="h-4 w-4 text-emerald-400" />
+                        <span>Reset Password</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleToggleStatus(hotel)}>
+                        <Power className={`h-4 w-4 ${isSuspended ? 'text-emerald-400' : 'text-amber-400'}`} />
+                        <span>{isSuspended ? 'Activate Hotel' : 'Suspend Access'}</span>
+                      </DropdownMenuItem>
+                      {hotel.id !== 'OWN-DEFAULT-SYSTEM' && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => handleDeleteHotel(hotel)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span>Delete Hotel</span>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardFooter>
               </Card>
             );
@@ -489,27 +503,29 @@ export default function HotelsManagerView({
           )}
 
           <form onSubmit={handleCreateHotel} className="space-y-3.5 text-xs">
-            <div>
-              <label className="text-zinc-300 font-semibold block mb-1">
+            <div className="space-y-1">
+              <Label htmlFor="company-name">
                 Hotel Company / Brand Name
-              </label>
-              <input
+              </Label>
+              <Input
+                id="company-name"
                 type="text"
                 required
                 placeholder="Enter hotel company or brand name"
                 value={formData.company_name}
                 onChange={handleNameChange}
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                className="focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
               />
             </div>
 
-            <div>
-              <label className="text-zinc-300 font-semibold block mb-1">
+            <div className="space-y-1">
+              <Label htmlFor="hotel-slug">
                 Vanity URL Slug (Instagram-style Username)
-              </label>
+              </Label>
               <div className="flex items-center gap-1.5">
-                <span className="text-zinc-500 font-mono select-none">{originUrl}/</span>
-                <input
+                <span className="text-zinc-500 font-mono text-xs select-none">{originUrl}/</span>
+                <Input
+                  id="hotel-slug"
                   type="text"
                   required
                   placeholder="hotel-endpoint-slug"
@@ -522,7 +538,7 @@ export default function HotelsManagerView({
                         .replace(/[^a-z0-9-]/g, ''),
                     })
                   }
-                  className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg font-mono text-emerald-400 placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="font-mono text-emerald-400 focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
               <span className="text-[10px] text-zinc-500 mt-0.5 block font-mono">
@@ -531,11 +547,12 @@ export default function HotelsManagerView({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="admin-username">
                   Hotel Admin Username
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="admin-username"
                   type="text"
                   required
                   placeholder="admin_username"
@@ -546,15 +563,16 @@ export default function HotelsManagerView({
                       admin_username: e.target.value.trim(),
                     })
                   }
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="admin-password">
                   Initial Password
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="admin-password"
                   type="password"
                   required
                   placeholder="••••••••"
@@ -565,17 +583,18 @@ export default function HotelsManagerView({
                       admin_password: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="contact-email">
                   Contact Email (Optional)
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="contact-email"
                   type="email"
                   placeholder="manager@hotel.com"
                   value={formData.contact_email}
@@ -585,15 +604,16 @@ export default function HotelsManagerView({
                       contact_email: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="max-kitchens">
                   Max Kitchen Branches
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="max-kitchens"
                   type="number"
                   min="1"
                   max="100"
@@ -604,7 +624,7 @@ export default function HotelsManagerView({
                       max_kitchens: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
             </div>
@@ -661,17 +681,18 @@ export default function HotelsManagerView({
             )}
 
             <form onSubmit={handleResetPassword} className="space-y-3 text-xs">
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="new-hotel-password">
                   New Password
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="new-hotel-password"
                   type="password"
                   required
                   placeholder="Minimum 6 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 
@@ -728,44 +749,47 @@ export default function HotelsManagerView({
             )}
 
             <form onSubmit={handleUpdateHotel} className="space-y-3.5 text-xs">
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="edit-company-name">
                   Hotel Company Name
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="edit-company-name"
                   type="text"
                   required
                   value={editFormData.company_name}
                   onChange={(e) => setEditFormData({ ...editFormData, company_name: e.target.value })}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="edit-contact-email">
                   Contact / Notifications Email
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="edit-contact-email"
                   type="email"
                   value={editFormData.contact_email}
                   onChange={(e) => setEditFormData({ ...editFormData, contact_email: e.target.value })}
                   placeholder="admin@hotel.com"
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="edit-max-kitchens">
                   Max Kitchen Appliances Allowed
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="edit-max-kitchens"
                   type="number"
                   min="1"
                   max="100"
                   required
                   value={editFormData.max_kitchens}
                   onChange={(e) => setEditFormData({ ...editFormData, max_kitchens: Number(e.target.value) })}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
                 <span className="text-[10px] text-zinc-500 block mt-0.5">
                   Limits the maximum number of edge kitchen computers this hotel can pair.

@@ -31,6 +31,16 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 export default function Navbar({
   overview,
@@ -316,15 +326,50 @@ export default function Navbar({
             </>
           )}
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400">
-            <UserCheck className="h-3.5 w-3.5 text-zinc-300" />
-            <span className="font-semibold text-zinc-200">
-              {user?.username || user?.user || 'Admin'}
-            </span>
-            <Badge variant={user?.is_superadmin ? 'warning' : 'outline'}>
-              {user?.is_superadmin ? 'OPERATOR' : 'HOTEL ADMIN'}
-            </Badge>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="hidden sm:flex items-center gap-2 text-xs text-zinc-400 hover:text-white">
+                <UserCheck className="h-3.5 w-3.5 text-zinc-300" />
+                <span className="font-semibold text-zinc-200">
+                  {user?.username || user?.user || 'Admin'}
+                </span>
+                <Badge variant={user?.is_superadmin ? 'warning' : 'outline'}>
+                  {user?.is_superadmin ? 'OPERATOR' : 'HOTEL ADMIN'}
+                </Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                <div>
+                  <div className="font-bold text-white">{user?.username || user?.user || 'Admin'}</div>
+                  <div className="text-[10px] text-zinc-400 font-normal">
+                    {user?.is_superadmin ? 'Service Platform Operator' : (currentHotel ? currentHotel.name : companyName)}
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {hotelSlug && (
+                <DropdownMenuItem onClick={copyVanityLink}>
+                  <Copy className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Copy Portal Link</span>
+                </DropdownMenuItem>
+              )}
+              {!user?.is_superadmin && (
+                <DropdownMenuItem onClick={() => {
+                  setShowPairingModal(true);
+                  if (!generatedCode) handleGeneratePairingCode();
+                }}>
+                  <KeyRound className="h-3.5 w-3.5 text-amber-400" />
+                  <span>Kitchen Pairing PIN</span>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onClick={onLogout}>
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button
             variant="outline"
@@ -453,27 +498,27 @@ export default function Navbar({
           ) : null}
 
           <form onSubmit={handleGeneratePairingCode} className="space-y-3 pt-2">
-            <div>
-              <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
+            <div className="space-y-1">
+              <Label htmlFor="pairing-hotel-name">
                 Hotel Branch Name
-              </label>
-              <input
+              </Label>
+              <Input
+                id="pairing-hotel-name"
                 type="text"
                 value={pairingHotel}
                 onChange={(e) => setPairingHotel(e.target.value)}
-                className="w-full h-8 px-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-white"
                 placeholder="Enter hotel branch name"
               />
             </div>
-            <div>
-              <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
+            <div className="space-y-1">
+              <Label htmlFor="pairing-kitchen-name">
                 Kitchen / Section Name
-              </label>
-              <input
+              </Label>
+              <Input
+                id="pairing-kitchen-name"
                 type="text"
                 value={pairingKitchen}
                 onChange={(e) => setPairingKitchen(e.target.value)}
-                className="w-full h-8 px-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-white"
                 placeholder="e.g. Main Prep Kitchen"
               />
             </div>

@@ -12,6 +12,8 @@ import {
 import { api } from '../services/api';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -123,18 +125,19 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300">
+              <Label htmlFor="hotel-endpoint">
                 Hotel Endpoint / Username
-              </label>
+              </Label>
               <div className="relative">
-                <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-                <input
+                <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500 pointer-events-none" />
+                <Input
+                  id="hotel-endpoint"
                   type="text"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter hotel endpoint (e.g. your-hotel)"
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors font-mono"
+                  className="pl-9 font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
               <span className="text-[10px] text-zinc-500 block">
@@ -144,9 +147,9 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-zinc-300">
+                <Label htmlFor="hotel-password">
                   Password
-                </label>
+                </Label>
                 <button
                   type="button"
                   onClick={() => {
@@ -162,14 +165,15 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                 </button>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-                <input
+                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500 pointer-events-none" />
+                <Input
+                  id="hotel-password"
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors font-mono"
+                  className="pl-9 font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
             </div>
@@ -237,17 +241,18 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                 Enter your Hotel Endpoint handle or registered contact email. We will send a 6-digit verification code to your registered email address.
               </p>
 
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="forgot-identifier">
                   Hotel Endpoint or Email
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="forgot-identifier"
                   type="text"
                   required
                   placeholder="e.g. your-hotel"
                   value={forgotIdentifier}
                   onChange={(e) => setForgotIdentifier(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 
@@ -277,32 +282,34 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                 Enter the 6-digit verification code sent to <strong className="text-white">{maskedEmail}</strong> along with your new password.
               </p>
 
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="otp-code">
                   6-Digit Verification Code
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="otp-code"
                   type="text"
                   required
                   maxLength={6}
                   placeholder="123456"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono text-center tracking-widest text-base focus:outline-none focus:border-emerald-500"
+                  className="font-mono text-center tracking-widest text-base focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 
-              <div>
-                <label className="text-zinc-300 font-semibold block mb-1">
+              <div className="space-y-1">
+                <Label htmlFor="new-password">
                   New Access Password
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="new-password"
                   type="password"
                   required
                   placeholder="Minimum 5 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 

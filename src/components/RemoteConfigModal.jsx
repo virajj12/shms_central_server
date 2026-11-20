@@ -9,6 +9,8 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) {
   const [windowSize, setWindowSize] = useState(2);
@@ -65,21 +67,24 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-zinc-300">AMFV Rolling Window Size (Frames)</label>
-            <input 
+            <Label htmlFor="window-size">
+              AMFV Rolling Window Size (Frames)
+            </Label>
+            <Input 
+              id="window-size"
               type="number" 
               value={windowSize} 
               onChange={(e) => setWindowSize(e.target.value)}
               min="1" 
               max="30" 
-              className="w-full px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-zinc-500" 
+              className="font-mono"
             />
             <p className="text-[10px] text-zinc-500">Number of consecutive frames over which consensus is computed (default: 2-10).</p>
           </div>
 
           <div className="space-y-1">
             <div className="flex justify-between text-xs">
-              <label className="font-semibold text-zinc-300">Pest Consensus Threshold</label>
+              <Label>Pest Consensus Threshold</Label>
               <span className="font-mono text-rose-400 font-bold">{pestThreshold}%</span>
             </div>
             <input 
@@ -95,7 +100,7 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
 
           <div className="space-y-1">
             <div className="flex justify-between text-xs">
-              <label className="font-semibold text-zinc-300">Hygiene (PPE) Consensus Threshold</label>
+              <Label>Hygiene (PPE) Consensus Threshold</Label>
               <span className="font-mono text-amber-400 font-bold">{hygieneThreshold}%</span>
             </div>
             <input 
@@ -110,14 +115,17 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-zinc-300">Alert Cooldown (Seconds)</label>
-            <input 
+            <Label htmlFor="cooldown-sec">
+              Alert Cooldown (Seconds)
+            </Label>
+            <Input 
+              id="cooldown-sec"
               type="number" 
               value={cooldown} 
               onChange={(e) => setCooldown(e.target.value)}
               min="5" 
               max="300" 
-              className="w-full px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-zinc-500" 
+              className="font-mono"
             />
           </div>
 
