@@ -91,8 +91,8 @@ export default function Navbar({
   const total = overview?.total_nodes || 0;
   const online = overview?.online_nodes || 0;
   const ownerId = currentHotel?.id || ownerInfo?.id || user?.owner_id || 'OWN-DEFAULT-SYSTEM';
-  const companyName = currentHotel?.name || ownerInfo?.company_name || 'Hotel Management';
-  const hotelSlug = currentHotel?.slug || (hotels.find((h) => h.id === ownerId)?.slug);
+  const companyName = currentHotel?.name || user?.hotel_name || ownerInfo?.company_name || 'Hotel Management';
+  const hotelSlug = currentHotel?.slug || user?.slug || (hotels.find((h) => h.id === ownerId)?.slug);
 
   const copyOwnerId = async () => {
     try {

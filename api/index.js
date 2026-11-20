@@ -34,7 +34,26 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ detail: 'Invalid username, endpoint, or password' });
     }
 
-    const token = createSessionToken(admin);
+    let slug = null;
+    let hotelName = null;
+    if (admin.owner_id && !admin.is_superadmin) {
+      try {
+        const registry = await db.getSlugRegistry();
+        slug = Object.entries(registry).find(([s, id]) => id === admin.owner_id)?.[0] || null;
+        const owner = await db.getOwner(admin.owner_id);
+        hotelName = owner?.company_name === 'Default Hotel Management' ? 'Grand Hotel' : (owner?.company_name || null);
+      } catch (e) {
+        console.warn('Error resolving slug in login:', e);
+      }
+    }
+
+    const userPayload = {
+      ...admin,
+      slug,
+      hotel_name: hotelName,
+    };
+
+    const token = createSessionToken(userPayload);
     res.cookie(SESSION_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -42,13 +61,15 @@ app.post('/api/auth/login', async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    db.logAudit(admin.username, 'LOGIN', null, 'Admin successfully logged in');
+    db.logAudit(admin.username, 'LOGIN', null, 'User successfully logged in');
     return res.json({
       success: true,
       user: admin.username,
       role: admin.role,
       owner_id: admin.owner_id,
       is_superadmin: admin.is_superadmin,
+      slug,
+      hotel_name: hotelName,
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -226,7 +247,7 @@ app.post('/api/auth/logout', (req, res) => {
   return res.json({ success: true, message: 'Logged out successfully' });
 });
 
-app.get('/api/auth/me', (req, res) => {
+app.get('/api/auth/me', async (req, res) => {
   const token = req.cookies?.[SESSION_COOKIE_NAME] ||
     (req.headers.authorization && req.headers.authorization.replace('Bearer ', ''));
 
@@ -239,11 +260,26 @@ app.get('/api/auth/me', (req, res) => {
     return res.status(401).json({ detail: 'Session expired' });
   }
 
+  let slug = user.slug || null;
+  let hotelName = user.hotel_name || null;
+  if (!slug && user.owner_id && !user.is_superadmin) {
+    try {
+      const registry = await db.getSlugRegistry();
+      slug = Object.entries(registry).find(([s, id]) => id === user.owner_id)?.[0] || null;
+      const owner = await db.getOwner(user.owner_id);
+      hotelName = owner?.company_name === 'Default Hotel Management' ? 'Grand Hotel' : (owner?.company_name || null);
+    } catch (e) {
+      console.warn('Error resolving slug in /api/auth/me:', e);
+    }
+  }
+
   return res.json({
     user: user.sub,
     role: user.role,
     owner_id: user.owner_id,
     is_superadmin: user.is_superadmin,
+    slug,
+    hotel_name: hotelName,
   });
 });
 

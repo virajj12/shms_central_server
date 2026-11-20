@@ -90,8 +90,32 @@ export default function App() {
         if (me && me.user) {
           setCurrentUser(me);
           if (me.is_superadmin) {
-            if (window.location.pathname.startsWith('/admin') || !portal) {
-              setActiveTab('hotels');
+            setActiveTab('hotels');
+            if (!window.location.pathname.startsWith('/admin')) {
+              window.history.replaceState({}, '', '/admin');
+              setCurrentPath('/admin');
+            }
+          } else {
+            setActiveTab('nodes');
+            const targetSlug = me.slug || portal?.slug;
+            if (targetSlug) {
+              const targetPath = `/${targetSlug}`;
+              if (window.location.pathname !== targetPath) {
+                window.history.replaceState({}, '', targetPath);
+                setCurrentPath(targetPath);
+              }
+              if (!portal || portal.slug !== targetSlug) {
+                try {
+                  const hRes = await api.getPublicHotel(targetSlug);
+                  if (hRes.exists && hRes.hotel) {
+                    setCurrentHotelPortal(hRes.hotel);
+                    setSelectedHotelId(hRes.hotel.id);
+                    setHotelNotFound(false);
+                  }
+                } catch (e) {
+                  console.error('Failed to load hotel portal on init:', e);
+                }
+              }
             }
           }
         }
@@ -206,6 +230,10 @@ export default function App() {
         onLoginSuccess={(res) => {
           setCurrentUser(res);
           setActiveTab('hotels');
+          if (!window.location.pathname.startsWith('/admin')) {
+            window.history.pushState({}, '', '/admin');
+            setCurrentPath('/admin');
+          }
         }}
       />
     );
@@ -242,12 +270,32 @@ export default function App() {
     return (
       <LoginView
         hotel={currentHotelPortal}
-        onLoginSuccess={(res) => {
+        onLoginSuccess={async (res) => {
           setCurrentUser(res);
           if (res.is_superadmin) {
             setActiveTab('hotels');
+            window.history.pushState({}, '', '/admin');
+            setCurrentPath('/admin');
           } else {
             setActiveTab('nodes');
+            const targetSlug = res.slug || (currentHotelPortal ? currentHotelPortal.slug : null);
+            if (targetSlug) {
+              const targetPath = `/${targetSlug}`;
+              window.history.pushState({}, '', targetPath);
+              setCurrentPath(targetPath);
+              if (!currentHotelPortal || currentHotelPortal.slug !== targetSlug) {
+                try {
+                  const hRes = await api.getPublicHotel(targetSlug);
+                  if (hRes.exists && hRes.hotel) {
+                    setCurrentHotelPortal(hRes.hotel);
+                    setSelectedHotelId(hRes.hotel.id);
+                    setHotelNotFound(false);
+                  }
+                } catch (e) {
+                  console.error('Failed to load hotel portal on login:', e);
+                }
+              }
+            }
           }
         }}
       />
