@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, Video } from 'lucide-react';
+import { Video } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 export default function LiveStreamModal({ isOpen, onClose, node }) {
   const [selectedCamId, setSelectedCamId] = useState('');
@@ -10,40 +17,44 @@ export default function LiveStreamModal({ isOpen, onClose, node }) {
     }
   }, [node]);
 
-  if (!isOpen || !node) return null;
+  if (!node) return null;
 
   const cameras = node.cameras || [];
   const streamUrl = selectedCamId ? `/api/proxy/stream/${node.id}/${selectedCamId}` : '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-      <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl p-0 gap-0 overflow-hidden border-zinc-800 bg-[#18181c]">
         {/* Modal Header */}
-        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-white">{node.name} — Live CCTV Feeds</h3>
-            <div className="text-xs text-zinc-400">{node.hotel_name} &bull; {node.location}</div>
-          </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        <DialogHeader className="p-4 border-b border-zinc-800 text-left">
+          <DialogTitle className="text-sm font-bold text-white flex items-center gap-2">
+            <Video className="h-4 w-4 text-emerald-400" />
+            {node.name} &mdash; Live CCTV Feeds
+          </DialogTitle>
+          <DialogDescription className="text-xs text-zinc-400">
+            {node.hotel_name} &bull; {node.location}
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Camera Switcher Pills */}
         <div className="px-4 py-2 border-b border-zinc-800 bg-zinc-900/60 flex items-center gap-1.5 overflow-x-auto">
-          {cameras.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setSelectedCamId(c.id)}
-              className={`px-3 py-1 rounded-md text-xs font-medium border transition-all ${
-                selectedCamId === c.id 
-                  ? 'bg-white text-zinc-950 border-white shadow-sm' 
-                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
-              }`}
-            >
-              {c.name}
-            </button>
-          ))}
+          {cameras.length === 0 ? (
+            <span className="text-xs text-zinc-500 italic">No cameras attached</span>
+          ) : (
+            cameras.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedCamId(c.id)}
+                className={`px-3 py-1 rounded-md text-xs font-medium border transition-all ${
+                  selectedCamId === c.id 
+                    ? 'bg-white text-zinc-950 border-white shadow-sm' 
+                    : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
+                }`}
+              >
+                {c.name}
+              </button>
+            ))
+          )}
         </div>
 
         {/* Video Player Stage */}
@@ -65,7 +76,7 @@ export default function LiveStreamModal({ isOpen, onClose, node }) {
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-zinc-800 text-right">
+        <div className="p-3 border-t border-zinc-800 text-right bg-zinc-950/40">
           <button 
             onClick={onClose} 
             className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold rounded-lg"
@@ -73,8 +84,7 @@ export default function LiveStreamModal({ isOpen, onClose, node }) {
             Close Stream
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
-

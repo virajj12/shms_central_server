@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { Sliders } from 'lucide-react';
 import { api } from '../services/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) {
   const [windowSize, setWindowSize] = useState(2);
@@ -19,7 +26,7 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
     }
   }, [node]);
 
-  if (!isOpen || !node) return null;
+  if (!node) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,17 +50,17 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-      <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-white">Remote Edge Configuration</h3>
-            <div className="text-xs text-zinc-400">{node.name} &bull; {node.hotel_name}</div>
-          </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden border-zinc-800 bg-[#18181c]">
+        <DialogHeader className="p-4 border-b border-zinc-800 text-left">
+          <DialogTitle className="text-sm font-bold text-white flex items-center gap-2">
+            <Sliders className="h-4 w-4 text-emerald-400" />
+            Remote Edge Configuration
+          </DialogTitle>
+          <DialogDescription className="text-xs text-zinc-400">
+            {node.name} &bull; {node.hotel_name}
+          </DialogDescription>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div className="space-y-1">
@@ -113,7 +120,7 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
             />
           </div>
 
-          <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2">
+          <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2 bg-zinc-950/20 -mx-4 -mb-4 p-4">
             <button 
               type="button" 
               onClick={onClose} 
@@ -130,8 +137,7 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
-

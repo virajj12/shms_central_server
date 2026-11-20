@@ -19,6 +19,13 @@ import {
   Settings,
 } from 'lucide-react';
 import { api } from '../services/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 export default function HotelsManagerView({
   hotels = [],
@@ -444,193 +451,181 @@ export default function HotelsManagerView({
         )}
       </div>
 
-      {/* Modal: Provision New Hotel */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-emerald-400" />
-                <h3 className="text-base font-bold text-white">Provision New Hotel Brand</h3>
-              </div>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="text-zinc-500 hover:text-zinc-300 text-sm"
-              >
-                ✕
-              </button>
+      {/* Modal: Provision New Hotel (shadcn/ui Dialog) */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader className="pb-3 border-b border-zinc-800">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-emerald-400" />
+              <DialogTitle className="text-base font-bold text-white">Provision New Hotel Brand</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-zinc-400">
+              Create a new client hotel tenant, vanity endpoint, and credentials.
+            </DialogDescription>
+          </DialogHeader>
+
+          {createError && (
+            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{createError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleCreateHotel} className="space-y-3.5 text-xs">
+            <div>
+              <label className="text-zinc-300 font-semibold block mb-1">
+                Hotel Company / Brand Name
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Enter hotel company or brand name"
+                value={formData.company_name}
+                onChange={handleNameChange}
+                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+              />
             </div>
 
-            {createError && (
-              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{createError}</span>
+            <div>
+              <label className="text-zinc-300 font-semibold block mb-1">
+                Vanity URL Slug (Instagram-style Username)
+              </label>
+              <div className="flex items-center gap-1.5">
+                <span className="text-zinc-500 font-mono select-none">{originUrl}/</span>
+                <input
+                  type="text"
+                  required
+                  placeholder="hotel-endpoint-slug"
+                  value={formData.slug}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      slug: e.target.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9-]/g, ''),
+                    })
+                  }
+                  className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg font-mono text-emerald-400 placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                />
               </div>
-            )}
+              <span className="text-[10px] text-zinc-500 mt-0.5 block font-mono">
+                This hotel will manage all its branches at this link.
+              </span>
+            </div>
 
-            <form onSubmit={handleCreateHotel} className="space-y-3.5 text-xs">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-zinc-300 font-semibold block mb-1">
-                  Hotel Company / Brand Name
+                  Hotel Admin Username
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Enter hotel company or brand name"
-                  value={formData.company_name}
-                  onChange={handleNameChange}
+                  placeholder="admin_username"
+                  value={formData.admin_username}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      admin_username: e.target.value.trim(),
+                    })
+                  }
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-zinc-300 font-semibold block mb-1">
+                  Initial Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={formData.admin_password}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      admin_password: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-zinc-300 font-semibold block mb-1">
+                  Contact Email (Optional)
+                </label>
+                <input
+                  type="email"
+                  placeholder="manager@hotel.com"
+                  value={formData.contact_email}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contact_email: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
                 <label className="text-zinc-300 font-semibold block mb-1">
-                  Vanity URL Slug (Instagram-style Username)
+                  Max Kitchen Branches
                 </label>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-500 font-mono select-none">{originUrl}/</span>
-                  <input
-                    type="text"
-                    required
-                    placeholder="hotel-endpoint-slug"
-                    value={formData.slug}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        slug: e.target.value
-                          .toLowerCase()
-                          .replace(/[^a-z0-9-]/g, ''),
-                      })
-                    }
-                    className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg font-mono text-emerald-400 placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-                <span className="text-[10px] text-zinc-500 mt-0.5 block font-mono">
-                  This hotel will manage all its branches at this link.
-                </span>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.max_kitchens}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      max_kitchens: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                />
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-zinc-300 font-semibold block mb-1">
-                    Hotel Admin Username
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="admin_username"
-                    value={formData.admin_username}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        admin_username: e.target.value.trim(),
-                      })
-                    }
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-zinc-300 font-semibold block mb-1">
-                    Initial Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={formData.admin_password}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        admin_password: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-zinc-300 font-semibold block mb-1">
-                    Contact Email (Optional)
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="manager@hotel.com"
-                    value={formData.contact_email}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contact_email: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-zinc-300 font-semibold block mb-1">
-                    Max Kitchen Branches
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={formData.max_kitchens}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        max_kitchens: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-zinc-800 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="py-2 px-3 rounded-lg border border-zinc-800 hover:bg-zinc-900 text-zinc-400 text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="py-2 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  {creating && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                  <span>{creating ? 'Creating...' : 'Create Hotel Organization'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Reset Hotel Admin Password */}
-      {resetModalHotel && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <div className="flex items-center gap-2">
-                <KeyRound className="h-4 w-4 text-emerald-400" />
-                <h3 className="text-sm font-bold text-white">Reset Hotel Password</h3>
-              </div>
+            <div className="pt-3 border-t border-zinc-800 flex items-center justify-end gap-2">
               <button
-                onClick={() => setResetModalHotel(null)}
-                className="text-zinc-500 hover:text-zinc-300 text-xs"
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                className="py-2 px-3 rounded-lg border border-zinc-800 hover:bg-zinc-900 text-zinc-400 text-xs font-semibold"
               >
-                ✕
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={creating}
+                className="py-2 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {creating && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>{creating ? 'Creating...' : 'Create Hotel Organization'}</span>
               </button>
             </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-            <div className="text-xs text-zinc-400">
-              Set a new access password for <strong className="text-white">{resetModalHotel.name}</strong> (Username: <code className="text-emerald-400">{resetModalHotel.admin_username || 'admin'}</code>).
-            </div>
+      {/* Modal: Reset Hotel Admin Password (shadcn/ui Dialog) */}
+      <Dialog open={Boolean(resetModalHotel)} onOpenChange={(open) => !open && setResetModalHotel(null)}>
+        {resetModalHotel && (
+          <DialogContent className="max-w-sm">
+            <DialogHeader className="pb-3 border-b border-zinc-800">
+              <div className="flex items-center gap-2">
+                <KeyRound className="h-4 w-4 text-emerald-400" />
+                <DialogTitle className="text-sm font-bold text-white">Reset Hotel Password</DialogTitle>
+              </div>
+              <DialogDescription className="text-xs text-zinc-400 pt-1">
+                Set a new access password for <strong className="text-white">{resetModalHotel.name}</strong> (Username: <code className="text-emerald-400">{resetModalHotel.admin_username || resetModalHotel.slug}</code>).
+              </DialogDescription>
+            </DialogHeader>
 
             {resetError && (
               <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
@@ -679,30 +674,23 @@ export default function HotelsManagerView({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
 
-      {/* Modal: Edit Hotel Details & Quotas */}
-      {editModalHotel && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+      {/* Modal: Edit Hotel Details & Quotas (shadcn/ui Dialog) */}
+      <Dialog open={Boolean(editModalHotel)} onOpenChange={(open) => !open && setEditModalHotel(null)}>
+        {editModalHotel && (
+          <DialogContent className="max-w-md">
+            <DialogHeader className="pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-emerald-400" />
-                <h3 className="text-sm font-bold text-white">Edit Hotel Settings &amp; Quotas</h3>
+                <DialogTitle className="text-sm font-bold text-white">Edit Hotel Settings &amp; Quotas</DialogTitle>
               </div>
-              <button
-                onClick={() => setEditModalHotel(null)}
-                className="text-zinc-500 hover:text-zinc-300 text-xs"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="text-xs text-zinc-400">
-              Configure parameters for <strong className="text-white">{editModalHotel.name}</strong> (Endpoint: <code className="text-emerald-400">/{editModalHotel.slug}</code>).
-            </div>
+              <DialogDescription className="text-xs text-zinc-400 pt-1">
+                Configure parameters for <strong className="text-white">{editModalHotel.name}</strong> (Endpoint: <code className="text-emerald-400">/{editModalHotel.slug}</code>).
+              </DialogDescription>
+            </DialogHeader>
 
             {editError && (
               <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
@@ -781,9 +769,9 @@ export default function HotelsManagerView({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

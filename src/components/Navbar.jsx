@@ -15,6 +15,20 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { api } from '../services/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
 
 export default function Navbar({
   overview,
@@ -330,167 +344,152 @@ export default function Navbar({
         </div>
       </header>
 
-      {/* Approvals Drawer */}
-      {showPending && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end"
-          onClick={() => setShowPending(false)}
-        >
-          <aside
-            className="h-full w-full max-w-md bg-[#18181c] border-l border-zinc-800 shadow-2xl flex flex-col"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+      {/* Approvals Sheet (shadcn/ui) */}
+      <Sheet open={showPending} onOpenChange={setShowPending}>
+        <SheetContent side="right" className="flex flex-col w-full sm:max-w-md p-0">
+          <SheetHeader className="p-4 border-b border-zinc-800">
+            <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm font-bold text-white">Pending Edge Enrollments</div>
-                <div className="text-[11px] text-zinc-500">{companyName}</div>
+                <SheetTitle className="text-sm font-bold text-white">Pending Edge Enrollments</SheetTitle>
+                <SheetDescription className="text-[11px] text-zinc-500">{companyName}</SheetDescription>
               </div>
               <button
                 onClick={refreshPending}
-                className="h-8 w-8 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 flex items-center justify-center"
+                className="h-8 w-8 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 flex items-center justify-center mr-6"
                 title="Refresh"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${loadingPending ? 'animate-spin' : ''}`} />
               </button>
             </div>
+          </SheetHeader>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {pending.length === 0 ? (
-                <div className="text-center py-12 text-zinc-500 text-xs">
-                  No pending enrollment requests.
-                </div>
-              ) : (
-                pending.map((edge) => (
-                  <div
-                    key={edge.request_id || edge.id}
-                    className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 space-y-2"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-xs font-bold text-white">
-                          {edge.name || edge.kitchen_name}
-                        </div>
-                        <div className="text-[11px] text-zinc-400">
-                          {edge.hotel_name} &bull; {edge.location || 'Unknown location'}
-                        </div>
-                      </div>
-                      <span className="px-1.5 py-0.5 rounded bg-amber-400/10 border border-amber-400/30 text-[10px] font-mono text-amber-300">
-                        PENDING
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-zinc-400">
-                      <div>ID: {edge.id}</div>
-                      <div>PIN: {edge.pairing_pin || '—'}</div>
-                      <div className="col-span-2 truncate">Request: {edge.request_id || edge.id}</div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => approveEnrollment(edge.request_id || edge.id)}
-                        className="h-8 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold"
-                      >
-                        Approve &amp; Connect
-                      </button>
-                      <button
-                        onClick={() => rejectEnrollment(edge.request_id || edge.id)}
-                        className="h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center justify-center gap-1"
-                      >
-                        <XCircle className="h-3.5 w-3.5" />
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </aside>
-        </div>
-      )}
-
-      {/* Pairing Session Code Modal */}
-      {showPairingModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <div className="flex items-center gap-2">
-                <KeyRound className="h-5 w-5 text-amber-400" />
-                <h3 className="text-sm font-bold text-white">Kitchen Pairing Session PIN</h3>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {pending.length === 0 ? (
+              <div className="text-center py-12 text-zinc-500 text-xs">
+                No pending enrollment requests.
               </div>
-              <button
-                onClick={() => setShowPairingModal(false)}
-                className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Generate a 6-digit session PIN to share with a kitchen edge computer. When entered in the Edge Server's connection modal, it immediately links and auto-approves under this hotel.
-            </p>
-
-            {generatedCode ? (
-              <div className="bg-zinc-900 border border-amber-500/30 rounded-xl p-4 text-center space-y-3">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-amber-400/80">
-                  Active 6-Digit Pairing PIN
-                </span>
-                <div className="text-3xl font-mono font-bold tracking-widest text-amber-300">
-                  {generatedCode.code}
-                </div>
-                <div className="text-[11px] text-zinc-400">
-                  Valid for 60 minutes &bull; Hotel:{' '}
-                  <span className="text-zinc-200 font-semibold">{generatedCode.hotel_name}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(generatedCode.code);
-                    setCopiedPin(true);
-                    setTimeout(() => setCopiedPin(false), 2000);
-                  }}
-                  className="w-full py-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+            ) : (
+              pending.map((edge) => (
+                <div
+                  key={edge.request_id || edge.id}
+                  className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 space-y-2"
                 >
-                  {copiedPin ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  <span>{copiedPin ? 'Copied PIN to Clipboard!' : 'Copy Pairing PIN'}</span>
-                </button>
-              </div>
-            ) : null}
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-xs font-bold text-white">
+                        {edge.name || edge.kitchen_name}
+                      </div>
+                      <div className="text-[11px] text-zinc-400">
+                        {edge.hotel_name} &bull; {edge.location || 'Unknown location'}
+                      </div>
+                    </div>
+                    <span className="px-1.5 py-0.5 rounded bg-amber-400/10 border border-amber-400/30 text-[10px] font-mono text-amber-300">
+                      PENDING
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-zinc-400">
+                    <div>ID: {edge.id}</div>
+                    <div>PIN: {edge.pairing_pin || '—'}</div>
+                    <div className="col-span-2 truncate">Request: {edge.request_id || edge.id}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => approveEnrollment(edge.request_id || edge.id)}
+                      className="h-8 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold"
+                    >
+                      Approve &amp; Connect
+                    </button>
+                    <button
+                      onClick={() => rejectEnrollment(edge.request_id || edge.id)}
+                      className="h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center justify-center gap-1"
+                    >
+                      <XCircle className="h-3.5 w-3.5" />
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
-            <form onSubmit={handleGeneratePairingCode} className="space-y-3 pt-2">
-              <div>
-                <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
-                  Hotel Branch Name
-                </label>
-                <input
-                  type="text"
-                  value={pairingHotel}
-                  onChange={(e) => setPairingHotel(e.target.value)}
-                  className="w-full h-8 px-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-white"
-                  placeholder="Enter hotel branch name"
-                />
+      {/* Pairing Session Code Dialog (shadcn/ui) */}
+      <Dialog open={showPairingModal} onOpenChange={setShowPairingModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="pb-3 border-b border-zinc-800">
+            <div className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-amber-400" />
+              <DialogTitle className="text-sm font-bold text-white">Kitchen Pairing Session PIN</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-zinc-400 leading-relaxed pt-1">
+              Generate a 6-digit session PIN to share with a kitchen edge computer. When entered in the Edge Server's connection modal, it immediately links and auto-approves under this hotel.
+            </DialogDescription>
+          </DialogHeader>
+
+          {generatedCode ? (
+            <div className="bg-zinc-900 border border-amber-500/30 rounded-xl p-4 text-center space-y-3">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-amber-400/80">
+                Active 6-Digit Pairing PIN
+              </span>
+              <div className="text-3xl font-mono font-bold tracking-widest text-amber-300">
+                {generatedCode.code}
               </div>
-              <div>
-                <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
-                  Kitchen / Section Name
-                </label>
-                <input
-                  type="text"
-                  value={pairingKitchen}
-                  onChange={(e) => setPairingKitchen(e.target.value)}
-                  className="w-full h-8 px-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-white"
-                  placeholder="e.g. Main Prep Kitchen"
-                />
+              <div className="text-[11px] text-zinc-400">
+                Valid for 60 minutes &bull; Hotel:{' '}
+                <span className="text-zinc-200 font-semibold">{generatedCode.hotel_name}</span>
               </div>
               <button
-                type="submit"
-                disabled={generatingPin}
-                className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(generatedCode.code);
+                  setCopiedPin(true);
+                  setTimeout(() => setCopiedPin(false), 2000);
+                }}
+                className="w-full py-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${generatingPin ? 'animate-spin' : ''}`} />
-                <span>{generatingPin ? 'Generating...' : 'Generate New PIN'}</span>
+                {copiedPin ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                <span>{copiedPin ? 'Copied PIN to Clipboard!' : 'Copy Pairing PIN'}</span>
               </button>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+          ) : null}
+
+          <form onSubmit={handleGeneratePairingCode} className="space-y-3 pt-2">
+            <div>
+              <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
+                Hotel Branch Name
+              </label>
+              <input
+                type="text"
+                value={pairingHotel}
+                onChange={(e) => setPairingHotel(e.target.value)}
+                className="w-full h-8 px-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-white"
+                placeholder="Enter hotel branch name"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
+                Kitchen / Section Name
+              </label>
+              <input
+                type="text"
+                value={pairingKitchen}
+                onChange={(e) => setPairingKitchen(e.target.value)}
+                className="w-full h-8 px-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-white"
+                placeholder="e.g. Main Prep Kitchen"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={generatingPin}
+              className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${generatingPin ? 'animate-spin' : ''}`} />
+              <span>{generatingPin ? 'Generating...' : 'Generate New PIN'}</span>
+            </button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
