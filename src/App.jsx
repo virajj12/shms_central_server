@@ -374,7 +374,7 @@ export default function App() {
               <button
                 onClick={() => setActiveTab('hotels')}
                 className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeTab === 'hotels'
+                  activeTab !== 'settings'
                     ? 'bg-white text-zinc-950 shadow-sm'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                 }`}
@@ -462,13 +462,14 @@ export default function App() {
       <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
         {currentUser.is_superadmin ? (
           <>
-            {activeTab === 'hotels' && (
+            {activeTab === 'settings' ? (
+              <SettingsView />
+            ) : (
               <HotelsManagerView
                 hotels={hotels}
                 onRefresh={loadHotels}
               />
             )}
-            {activeTab === 'settings' && <SettingsView />}
           </>
         ) : (
           <>

@@ -6,6 +6,7 @@ import {
   LogOut,
   RefreshCw,
   ShieldCheck,
+  ShieldAlert,
   UserCheck,
   XCircle,
   KeyRound,
