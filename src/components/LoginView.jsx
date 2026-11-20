@@ -7,12 +7,18 @@ import {
   Loader2,
   KeyRound,
   CheckCircle2,
-  Mail,
-  ShieldAlert,
   ArrowRight,
-  X,
 } from 'lucide-react';
 import { api } from '../services/api';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 export default function LoginView({ hotel = null, onLoginSuccess }) {
   const [username, setUsername] = useState(hotel ? hotel.slug : '');
@@ -107,7 +113,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
         </div>
 
         {/* Card */}
-        <div className="bg-[#18181c] border border-zinc-800/90 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-4">
+        <Card className="p-6 sm:p-8 space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
@@ -150,7 +156,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                     setForgotSuccess('');
                     setShowForgotModal(true);
                   }}
-                  className="text-[11px] text-emerald-400 hover:text-emerald-300 hover:underline"
+                  className="text-[11px] text-emerald-400 hover:text-emerald-300 hover:underline cursor-pointer"
                 >
                   Forgot Password?
                 </button>
@@ -168,10 +174,11 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
+              variant="emerald"
               disabled={loading}
-              className="w-full mt-2 py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+              className="w-full mt-2"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -179,7 +186,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                 <LogIn className="h-4 w-4" />
               )}
               <span>{loading ? 'Signing in...' : 'Sign In to Hotel Console'}</span>
-            </button>
+            </Button>
           </form>
 
           {/* Footer Navigation */}
@@ -194,135 +201,135 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
               <ArrowRight className="h-3 w-3" />
             </a>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Forgot Password Modal (Via App Password SMTP) */}
-      {showForgotModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <div className="flex items-center gap-2">
-                <KeyRound className="h-5 w-5 text-emerald-400" />
-                <h3 className="text-sm font-bold text-white">Reset Hotel Password</h3>
-              </div>
-              <button
-                onClick={() => setShowForgotModal(false)}
-                className="text-zinc-500 hover:text-white text-xs"
-              >
-                <X className="h-4 w-4" />
-              </button>
+      {/* Forgot Password Modal (Via App Password SMTP - Dialog) */}
+      <Dialog open={showForgotModal} onOpenChange={setShowForgotModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader className="pb-3 border-b border-zinc-800">
+            <div className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-emerald-400" />
+              <DialogTitle className="text-sm font-bold text-white">Reset Hotel Password</DialogTitle>
             </div>
+            <DialogDescription className="text-xs text-zinc-400 pt-1">
+              Recover your hotel management account credentials via registered security email.
+            </DialogDescription>
+          </DialogHeader>
 
-            {forgotError && (
-              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{forgotError}</span>
+          {forgotError && (
+            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{forgotError}</span>
+            </div>
+          )}
+
+          {forgotSuccess && (
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span>{forgotSuccess}</span>
+            </div>
+          )}
+
+          {forgotStep === 1 ? (
+            <form onSubmit={handleRequestOtp} className="space-y-3.5 text-xs">
+              <p className="text-zinc-400 text-xs leading-relaxed">
+                Enter your Hotel Endpoint handle or registered contact email. We will send a 6-digit verification code to your registered email address.
+              </p>
+
+              <div>
+                <label className="text-zinc-300 font-semibold block mb-1">
+                  Hotel Endpoint or Email
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. your-hotel"
+                  value={forgotIdentifier}
+                  onChange={(e) => setForgotIdentifier(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                />
               </div>
-            )}
 
-            {forgotSuccess && (
-              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
-                <span>{forgotSuccess}</span>
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowForgotModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="emerald"
+                  size="sm"
+                  disabled={forgotLoading}
+                >
+                  {forgotLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  <span>{forgotLoading ? 'Sending Code...' : 'Send Verification Code'}</span>
+                </Button>
               </div>
-            )}
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyOtp} className="space-y-3.5 text-xs">
+              <p className="text-zinc-400 text-xs leading-relaxed">
+                Enter the 6-digit verification code sent to <strong className="text-white">{maskedEmail}</strong> along with your new password.
+              </p>
 
-            {forgotStep === 1 ? (
-              <form onSubmit={handleRequestOtp} className="space-y-3.5 text-xs">
-                <p className="text-zinc-400 text-xs leading-relaxed">
-                  Enter your Hotel Endpoint handle or registered contact email. We will send a 6-digit verification code to your registered email address.
-                </p>
+              <div>
+                <label className="text-zinc-300 font-semibold block mb-1">
+                  6-Digit Verification Code
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={6}
+                  placeholder="123456"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono text-center tracking-widest text-base focus:outline-none focus:border-emerald-500"
+                />
+              </div>
 
-                <div>
-                  <label className="text-zinc-300 font-semibold block mb-1">
-                    Hotel Endpoint or Email
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. your-hotel"
-                    value={forgotIdentifier}
-                    onChange={(e) => setForgotIdentifier(e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
+              <div>
+                <label className="text-zinc-300 font-semibold block mb-1">
+                  New Access Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Minimum 5 characters"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
 
-                <div className="pt-2 flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotModal(false)}
-                    className="py-2 px-3 rounded-lg border border-zinc-800 text-zinc-400 hover:bg-zinc-900"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={forgotLoading}
-                    className="py-2 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg flex items-center gap-1.5 disabled:opacity-50"
-                  >
-                    {forgotLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    <span>{forgotLoading ? 'Sending Code...' : 'Send Verification Code'}</span>
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp} className="space-y-3.5 text-xs">
-                <p className="text-zinc-400 text-xs leading-relaxed">
-                  Enter the 6-digit verification code sent to <strong className="text-white">{maskedEmail}</strong> along with your new password.
-                </p>
-
-                <div>
-                  <label className="text-zinc-300 font-semibold block mb-1">
-                    6-Digit Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
-                    placeholder="123456"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono text-center tracking-widest text-base focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-zinc-300 font-semibold block mb-1">
-                    New Access Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Minimum 5 characters"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-
-                <div className="pt-2 flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setForgotStep(1)}
-                    className="text-[11px] text-zinc-400 hover:text-white"
-                  >
-                    &larr; Re-enter Endpoint
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={forgotLoading}
-                    className="py-2 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg flex items-center gap-1.5 disabled:opacity-50"
-                  >
-                    {forgotLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    <span>{forgotLoading ? 'Verifying...' : 'Set New Password'}</span>
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+              <div className="pt-2 flex items-center justify-between">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setForgotStep(1)}
+                  className="text-zinc-400 hover:text-white"
+                >
+                  &larr; Re-enter Endpoint
+                </Button>
+                <Button
+                  type="submit"
+                  variant="emerald"
+                  size="sm"
+                  disabled={forgotLoading}
+                >
+                  {forgotLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  <span>{forgotLoading ? 'Verifying...' : 'Set New Password'}</span>
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

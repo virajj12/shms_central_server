@@ -10,6 +10,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerId = null }) {
   const [violations, setViolations] = useState([]);
@@ -118,14 +120,12 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerI
                   )}
 
                   <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                      isPest ? 'bg-rose-500/90 text-white' : 'bg-amber-500/90 text-zinc-950 font-extrabold'
-                    }`}>
+                    <Badge variant={isPest ? 'destructive' : 'warning'}>
                       {item.category}
-                    </span>
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-black/70 text-zinc-200 border border-zinc-700">
+                    </Badge>
+                    <Badge variant="outline" className="bg-black/70">
                       {Math.round((item.confidence || 0) * 100)}%
-                    </span>
+                    </Badge>
                   </div>
 
                   <div className="absolute bottom-2 right-2 p-1 rounded bg-black/60 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -141,16 +141,14 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerI
                     </div>
                   </div>
 
-                  <button 
+                  <Button 
+                    variant={item.acknowledged ? "outline" : "secondary"}
+                    size="xs"
                     onClick={(e) => handleAcknowledge(item.id, e)}
-                    className={`px-2 py-1 rounded text-[10px] font-semibold border transition-all ${
-                      item.acknowledged 
-                        ? 'text-zinc-500 border-zinc-800 bg-zinc-900 cursor-default' 
-                        : 'text-zinc-300 border-zinc-700 hover:bg-zinc-800'
-                    }`}
+                    className={item.acknowledged ? "text-zinc-500 cursor-default" : ""}
                   >
                     {item.acknowledged ? '✓ Reviewed' : 'Review'}
-                  </button>
+                  </Button>
                 </CardContent>
               </Card>
             );

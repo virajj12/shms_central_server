@@ -29,6 +29,8 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function Navbar({
   overview,
@@ -203,15 +205,9 @@ export default function Navbar({
                   ? currentHotel.name
                   : companyName}
               </span>
-              <span
-                className={`px-1.5 py-0.2 text-[9px] font-mono rounded border font-semibold ${
-                  user?.is_superadmin
-                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                    : 'bg-zinc-800 text-zinc-300 border-zinc-700'
-                }`}
-              >
+              <Badge variant={user?.is_superadmin ? 'warning' : 'secondary'}>
                 {user?.is_superadmin ? 'OPERATOR' : 'HOTEL PORTAL'}
-              </span>
+              </Badge>
             </div>
             <div className="text-[10px] text-zinc-400">
               {user?.is_superadmin
@@ -289,21 +285,24 @@ export default function Navbar({
                 )}
               </button>
 
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setShowPairingModal(true);
                   if (!generatedCode) handleGeneratePairingCode();
                 }}
-                className="h-8 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 title="Generate a 6-digit PIN to pair a new kitchen edge server"
               >
                 <KeyRound className="h-3.5 w-3.5 text-amber-400" />
                 <span className="hidden sm:inline">Pairing PIN</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setShowPending(true)}
-                className="relative h-8 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                className="relative"
                 title="Review pending edge enrollments"
               >
                 <Inbox className="h-3.5 w-3.5" />
@@ -313,7 +312,7 @@ export default function Navbar({
                     {pending.length}
                   </span>
                 )}
-              </button>
+              </Button>
             </>
           )}
 
@@ -322,25 +321,20 @@ export default function Navbar({
             <span className="font-semibold text-zinc-200">
               {user?.username || user?.user || 'Admin'}
             </span>
-            <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
-                user?.is_superadmin
-                  ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30 font-bold'
-                  : 'bg-zinc-800 text-zinc-400'
-              }`}
-            >
+            <Badge variant={user?.is_superadmin ? 'warning' : 'outline'}>
               {user?.is_superadmin ? 'OPERATOR' : 'HOTEL ADMIN'}
-            </span>
+            </Badge>
           </div>
 
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onLogout}
-            className="h-8 px-3 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
             title="Sign out of Console"
           >
             <LogOut className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Logout</span>
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -393,19 +387,21 @@ export default function Navbar({
                     <div className="col-span-2 truncate">Request: {edge.request_id || edge.id}</div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button
+                    <Button
+                      variant="emerald"
+                      size="sm"
                       onClick={() => approveEnrollment(edge.request_id || edge.id)}
-                      className="h-8 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold"
                     >
                       Approve &amp; Connect
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
                       onClick={() => rejectEnrollment(edge.request_id || edge.id)}
-                      className="h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center justify-center gap-1"
                     >
                       <XCircle className="h-3.5 w-3.5" />
                       Reject
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))
@@ -439,18 +435,20 @@ export default function Navbar({
                 Valid for 60 minutes &bull; Hotel:{' '}
                 <span className="text-zinc-200 font-semibold">{generatedCode.hotel_name}</span>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="default"
+                size="sm"
+                className="w-full bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold"
                 onClick={() => {
                   navigator.clipboard.writeText(generatedCode.code);
                   setCopiedPin(true);
                   setTimeout(() => setCopiedPin(false), 2000);
                 }}
-                className="w-full py-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
               >
                 {copiedPin ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 <span>{copiedPin ? 'Copied PIN to Clipboard!' : 'Copy Pairing PIN'}</span>
-              </button>
+              </Button>
             </div>
           ) : null}
 
@@ -479,14 +477,16 @@ export default function Navbar({
                 placeholder="e.g. Main Prep Kitchen"
               />
             </div>
-            <button
+            <Button
               type="submit"
+              variant="secondary"
+              size="sm"
               disabled={generatingPin}
-              className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5"
+              className="w-full"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${generatingPin ? 'animate-spin' : ''}`} />
               <span>{generatingPin ? 'Generating...' : 'Generate New PIN'}</span>
-            </button>
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

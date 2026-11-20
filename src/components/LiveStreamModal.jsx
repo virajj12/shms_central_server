@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 export default function LiveStreamModal({ isOpen, onClose, node }) {
   const [selectedCamId, setSelectedCamId] = useState('');
@@ -77,12 +78,13 @@ export default function LiveStreamModal({ isOpen, onClose, node }) {
 
         {/* Footer */}
         <div className="p-3 border-t border-zinc-800 text-right bg-zinc-950/40">
-          <button 
-            onClick={onClose} 
-            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold rounded-lg"
+          <Button 
+            variant="secondary"
+            size="sm"
+            onClick={onClose}
           >
             Close Stream
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

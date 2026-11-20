@@ -7,9 +7,11 @@ import {
   AlertCircle,
   Loader2,
   ArrowLeft,
-  Building2,
 } from 'lucide-react';
 import { api } from '../services/api';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function AdminLoginView({ onLoginSuccess }) {
   const [username, setUsername] = useState('admin');
@@ -44,8 +46,10 @@ export default function AdminLoginView({ onLoginSuccess }) {
             <ShieldAlert className="h-7 w-7 text-amber-400" />
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-mono font-semibold mb-2">
-            <span>SERVICE PROVIDER OPERATOR</span>
+          <div className="mb-2">
+            <Badge variant="warning">
+              SERVICE PROVIDER OPERATOR
+            </Badge>
           </div>
 
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
@@ -57,7 +61,7 @@ export default function AdminLoginView({ onLoginSuccess }) {
         </div>
 
         {/* Card */}
-        <div className="bg-[#141418] border border-zinc-800/90 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-4">
+        <Card className="p-6 sm:p-8 space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
@@ -100,10 +104,10 @@ export default function AdminLoginView({ onLoginSuccess }) {
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-2.5 px-4 bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+              className="w-full mt-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -111,7 +115,7 @@ export default function AdminLoginView({ onLoginSuccess }) {
                 <LogIn className="h-4 w-4" />
               )}
               <span>{loading ? 'Authenticating...' : 'Sign In as Operator'}</span>
-            </button>
+            </Button>
           </form>
 
           <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-500">
@@ -124,7 +128,7 @@ export default function AdminLoginView({ onLoginSuccess }) {
             </a>
             <span className="font-mono">SHMS Core</span>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

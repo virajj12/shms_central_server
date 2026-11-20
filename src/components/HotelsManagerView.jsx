@@ -35,6 +35,8 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function HotelsManagerView({
   hotels = [],
@@ -220,16 +222,16 @@ export default function HotelsManagerView({
           </p>
         </div>
 
-        <button
+        <Button
+          variant="emerald"
           onClick={() => {
             setCreateError('');
             setShowCreateModal(true);
           }}
-          className="py-2 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-emerald-950/40 shrink-0"
         >
           <Plus className="h-4 w-4" />
           <span>Provision New Hotel</span>
-        </button>
+        </Button>
       </div>
 
       {/* KPI Cards */}
@@ -288,12 +290,14 @@ export default function HotelsManagerView({
           className="bg-transparent border-none text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none w-full"
         />
         {search && (
-          <button
+          <Button
+            variant="ghost"
+            size="xs"
             onClick={() => setSearch('')}
-            className="text-[10px] text-zinc-500 hover:text-zinc-300"
+            className="text-zinc-500 hover:text-zinc-300"
           >
             Clear
-          </button>
+          </Button>
         )}
       </div>
 
@@ -343,15 +347,9 @@ export default function HotelsManagerView({
                     </div>
 
                     <CardAction className="m-0 shrink-0">
-                      <span
-                        className={`px-2 py-0.5 text-[10px] font-mono uppercase font-bold rounded ${
-                          isSuspended
-                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-                            : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                        }`}
-                      >
+                      <Badge variant={isSuspended ? 'destructive' : 'success'}>
                         {hotel.status}
-                      </span>
+                      </Badge>
                     </CardAction>
                   </CardHeader>
 
@@ -366,9 +364,10 @@ export default function HotelsManagerView({
                       </div>
 
                       <div className="flex items-center gap-1 shrink-0">
-                        <button
+                        <Button
+                          variant="outline"
+                          size="xs"
                           onClick={(e) => handleCopyLink(hotel.slug, e)}
-                          className="py-1 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors"
                           title="Copy client login link to provide to hotel owner"
                         >
                           {copiedSlug === hotel.slug ? (
@@ -382,7 +381,7 @@ export default function HotelsManagerView({
                               <span>Copy Link</span>
                             </>
                           )}
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
@@ -407,7 +406,9 @@ export default function HotelsManagerView({
 
                 {/* Actions Toolbar (Superadmin Operator Only Manages) */}
                 <CardFooter className="p-0 mt-5 pt-3.5 border-t border-zinc-800/80 flex items-center justify-between gap-1.5">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => {
                       setEditModalHotel(hotel);
                       setEditFormData({
@@ -418,44 +419,47 @@ export default function HotelsManagerView({
                       setEditError('');
                       setEditSuccess('');
                     }}
-                    className="flex-1 py-1.5 px-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+                    className="flex-1"
                     title="Edit hotel details and kitchen quotas"
                   >
                     <Settings className="h-3.5 w-3.5 text-zinc-400" />
                     <span>Edit Quota</span>
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
                     onClick={() => {
                       setResetModalHotel(hotel);
                       setNewPassword('');
                       setResetError('');
                       setResetSuccess('');
                     }}
-                    className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-lg transition-colors"
                     title="Reset Hotel Owner Password"
                   >
                     <KeyRound className="h-4 w-4" />
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
                     onClick={() => handleToggleStatus(hotel)}
-                    className={`p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 ${
-                      isSuspended ? 'text-amber-400 hover:text-amber-300' : 'text-zinc-400 hover:text-zinc-200'
-                    } rounded-lg transition-colors`}
+                    className={isSuspended ? 'text-amber-400 hover:text-amber-300' : 'text-zinc-400 hover:text-zinc-200'}
                     title={isSuspended ? 'Activate Hotel' : 'Suspend Hotel'}
                   >
                     <Power className="h-4 w-4" />
-                  </button>
+                  </Button>
 
                   {hotel.id !== 'OWN-DEFAULT-SYSTEM' && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => handleDeleteHotel(hotel)}
-                      className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                      className="text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10"
                       title="Delete Hotel"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                   )}
                 </CardFooter>
               </Card>
@@ -606,21 +610,23 @@ export default function HotelsManagerView({
             </div>
 
             <div className="pt-3 border-t border-zinc-800 flex items-center justify-end gap-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setShowCreateModal(false)}
-                className="py-2 px-3 rounded-lg border border-zinc-800 hover:bg-zinc-900 text-zinc-400 text-xs font-semibold"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
+                variant="emerald"
+                size="sm"
                 disabled={creating}
-                className="py-2 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg flex items-center gap-1.5 disabled:opacity-50"
               >
                 {creating && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 <span>{creating ? 'Creating...' : 'Create Hotel Organization'}</span>
-              </button>
+              </Button>
             </div>
           </form>
         </DialogContent>
@@ -670,21 +676,23 @@ export default function HotelsManagerView({
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-2">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setResetModalHotel(null)}
-                  className="py-1.5 px-3 rounded-lg border border-zinc-800 text-zinc-400 hover:bg-zinc-900"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  variant="emerald"
+                  size="sm"
                   disabled={resetting}
-                  className="py-1.5 px-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg flex items-center gap-1.5 disabled:opacity-50"
                 >
                   {resetting && <Loader2 className="h-3 w-3 animate-spin" />}
                   <span>{resetting ? 'Updating...' : 'Save Password'}</span>
-                </button>
+                </Button>
               </div>
             </form>
           </DialogContent>
@@ -765,21 +773,23 @@ export default function HotelsManagerView({
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-2">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setEditModalHotel(null)}
-                  className="py-1.5 px-3 rounded-lg border border-zinc-800 text-zinc-400 hover:bg-zinc-900"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  variant="emerald"
+                  size="sm"
                   disabled={editing}
-                  className="py-1.5 px-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg flex items-center gap-1.5 disabled:opacity-50"
                 >
                   {editing && <Loader2 className="h-3 w-3 animate-spin" />}
                   <span>{editing ? 'Saving...' : 'Save Settings'}</span>
-                </button>
+                </Button>
               </div>
             </form>
           </DialogContent>

@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) {
   const [windowSize, setWindowSize] = useState(2);
@@ -121,20 +122,21 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
           </div>
 
           <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2 bg-zinc-950/20 -mx-4 -mb-4 p-4">
-            <button 
+            <Button 
               type="button" 
-              onClick={onClose} 
-              className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold rounded-lg border border-zinc-800"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
             >
               Cancel
-            </button>
-            <button 
+            </Button>
+            <Button 
               type="submit" 
+              size="sm"
               disabled={saving}
-              className="px-3 py-1.5 bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold rounded-lg shadow-sm"
             >
               {saving ? 'Pushing...' : 'Push Config to Edge'}
-            </button>
+            </Button>
           </div>
         </form>
       </DialogContent>

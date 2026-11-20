@@ -9,6 +9,8 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function NodeCard({
   node,
@@ -52,9 +54,9 @@ export default function NodeCard({
           </div>
 
           <CardAction className="m-0 shrink-0">
-            <span className={`px-2 py-0.5 text-[10px] font-mono uppercase font-bold rounded ${isOnline ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}`}>
+            <Badge variant={isOnline ? 'success' : 'destructive'}>
               {node.status}
-            </span>
+            </Badge>
           </CardAction>
         </CardHeader>
 
@@ -67,23 +69,23 @@ export default function NodeCard({
                 <span className="font-mono text-zinc-200 font-semibold truncate block" title={node.id}>
                   {node.id}
                 </span>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigator.clipboard.writeText(node.id);
                     setCopiedId(true);
                     setTimeout(() => setCopiedId(false), 2000);
                   }}
-                  className="p-1 rounded hover:bg-zinc-800 text-zinc-500 hover:text-zinc-200 transition-colors shrink-0"
                   title="Copy Kitchen Session ID"
                 >
                   {copiedId ? (
                     <Check className="h-3 w-3 text-emerald-400" />
                   ) : (
-                    <Copy className="h-3 w-3" />
+                    <Copy className="h-3 w-3 text-zinc-500 hover:text-zinc-200" />
                   )}
-                </button>
+                </Button>
               </div>
             </div>
             <div>
@@ -98,20 +100,20 @@ export default function NodeCard({
 
           {/* Duplex Sync Strip */}
           <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
-            <span className={`px-2 py-0.5 rounded border ${isOnline ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-zinc-700 bg-zinc-900 text-zinc-500'}`}>
+            <Badge variant={isOnline ? 'success' : 'outline'}>
               <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
               {isOnline ? 'Duplex linked (3s)' : 'Offline'}
-            </span>
-            <span className={`px-2 py-0.5 rounded border ${unsynced > 0 ? 'border-amber-700/40 bg-amber-500/10 text-amber-300' : 'border-zinc-700 bg-zinc-900 text-zinc-500'}`}>
+            </Badge>
+            <Badge variant={unsynced > 0 ? 'warning' : 'outline'}>
               {unsynced} unsynced
-            </span>
-            <span className="px-2 py-0.5 rounded border border-zinc-700 bg-zinc-900 text-zinc-400">
+            </Badge>
+            <Badge variant="outline">
               Last sync {lastSync}
-            </span>
+            </Badge>
             {telemetry.cpu_percent != null && (
-              <span className="px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900/60 text-zinc-500">
+              <Badge variant="outline" className="text-zinc-500">
                 CPU {Math.round(telemetry.cpu_percent)}%
-              </span>
+              </Badge>
             )}
           </div>
 
@@ -123,11 +125,11 @@ export default function NodeCard({
                 <span className="text-xs text-zinc-600 italic">No cameras attached</span>
               ) : (
                 cameras.map((c) => (
-                  <span key={c.id || c.name} className="px-2 py-1 rounded-md text-[10px] font-mono bg-zinc-900 border border-zinc-800 text-zinc-300 flex items-center gap-1.5">
+                  <Badge key={c.id || c.name} variant="outline" className="text-zinc-300 gap-1.5 font-normal">
                     <span className={`h-1.5 w-1.5 rounded-full ${c.connected ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
                     <span>{c.name}</span>
                     {c.fps != null && <span className="text-zinc-500">{c.fps}fps</span>}
-                  </span>
+                  </Badge>
                 ))
               )}
             </div>
@@ -138,54 +140,61 @@ export default function NodeCard({
       {/* Action Toolbar */}
       <CardFooter className="p-0 mt-5 pt-4 border-t border-zinc-800/80 flex items-center justify-between gap-2">
         {isPending ? (
-          <button
+          <Button
+            variant="emerald"
+            className="flex-1"
             onClick={() => onApprove && onApprove(node.request_id || node.id)}
             title="Approve this kitchen node to grant cloud access"
-            className="flex-1 py-2 px-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40"
           >
             <CheckCircle className="h-4 w-4" />
             <span>Approve & Connect Node</span>
-          </button>
+          </Button>
         ) : (
           <>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
               onClick={() => onRequestSnapshot(node)}
               disabled={!isOnline}
               title={isOnline ? "Capture a live JPEG snapshot from the edge camera" : "Edge appliance is offline"}
-              className="flex-1 py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 disabled:opacity-40 disabled:pointer-events-none text-zinc-200 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
             >
               <Camera className="h-3.5 w-3.5 text-emerald-400" />
               <span>Live Snapshot</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => onTriggerSync(node)}
               disabled={!isOnline}
               title={isOnline ? "Ask the edge to sync pending incidents now" : "Edge appliance is offline"}
-              className="py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 disabled:opacity-40 disabled:pointer-events-none text-zinc-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors"
             >
               <RefreshCw className="h-3.5 w-3.5 text-sky-400" />
               <span>Sync</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => onOpenConfig(node)}
-              className="py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors"
               title="Remote Edge Settings & AMFV"
             >
               <Sliders className="h-3.5 w-3.5 text-zinc-400" />
               <span>Config</span>
-            </button>
+            </Button>
           </>
         )}
 
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={() => onDelete(node.id)}
-          className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+          className="text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10"
           title="Deregister Node"
         >
           <Trash2 className="h-4 w-4" />
-        </button>
+        </Button>
       </CardFooter>
     </Card>
   );

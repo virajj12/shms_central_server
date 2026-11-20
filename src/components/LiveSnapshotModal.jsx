@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 export default function LiveSnapshotModal({ isOpen, onClose, node }) {
   const [selectedCamId, setSelectedCamId] = useState('');
@@ -129,20 +130,22 @@ export default function LiveSnapshotModal({ isOpen, onClose, node }) {
             {error && image && <span className="text-amber-300"> &bull; refresh failed</span>}
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => fetchSnapshot(selectedCamId)}
               disabled={loading}
-              className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 disabled:opacity-40"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-            <button
+              <span>Refresh</span>
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={onClose}
-              className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold rounded-lg"
             >
               Close
-            </button>
+            </Button>
           </div>
         </div>
       </DialogContent>
