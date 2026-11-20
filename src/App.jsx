@@ -123,42 +123,34 @@ export default function App() {
     }
   }, [currentUser, loadHotels]);
 
-  // Determine effective owner_id filter for queries
-  const getEffectiveOwnerId = useCallback(() => {
-    if (currentHotelPortal) {
-      return currentHotelPortal.id;
-    }
-    if (currentUser?.is_superadmin) {
-      return selectedHotelId && selectedHotelId !== 'all' ? selectedHotelId : null;
-    }
-    return currentUser?.owner_id || null;
-  }, [currentHotelPortal, currentUser, selectedHotelId]);
-
-  // Fetch dashboard data based on current scope
+  // Fetch dashboard data for Hotel Owner (Hotel Tenants only)
   const refreshData = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUser || currentUser.is_superadmin) return;
     try {
-      const effectiveOwner = getEffectiveOwnerId();
       const [ov, nd] = await Promise.all([
-        api.getOverview(effectiveOwner),
-        api.getNodes(effectiveOwner),
+        api.getOverview(),
+        api.getNodes(),
       ]);
       setOverview(ov || {});
       setNodes(nd || []);
     } catch (e) {
       console.error('Data poll error', e);
     }
-  }, [currentUser, getEffectiveOwnerId]);
+  }, [currentUser]);
 
   useEffect(() => {
     if (!currentUser) return;
-    refreshData();
-    const effectiveOwner = getEffectiveOwnerId();
-    api.getAnalytics(effectiveOwner).then(setAnalytics).catch(console.error);
-
-    const interval = setInterval(refreshData, 5000);
-    return () => clearInterval(interval);
-  }, [currentUser, refreshData, getEffectiveOwnerId]);
+    if (currentUser.is_superadmin) {
+      loadHotels();
+      const interval = setInterval(loadHotels, 5000);
+      return () => clearInterval(interval);
+    } else {
+      refreshData();
+      api.getAnalytics().then(setAnalytics).catch(console.error);
+      const interval = setInterval(refreshData, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [currentUser, refreshData, loadHotels]);
 
   const handleLogout = async () => {
     try {
@@ -293,7 +285,38 @@ export default function App() {
     );
   }
 
-  // 5. Access Denied: Logged into hotel A, but browsing hotel B's vanity link
+  // 5. Access Denied: Admin MUST NOT have endpoint access to client hotels
+  if (currentHotelPortal && currentUser.is_superadmin) {
+    return (
+      <div className="min-h-screen bg-[#0f0f12] text-zinc-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#18181c] border border-zinc-800 rounded-2xl p-8 text-center space-y-4 shadow-2xl">
+          <div className="h-12 w-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+            <ShieldAlert className="h-6 w-6" />
+          </div>
+          <h1 className="text-lg font-bold text-white">Hotel Endpoint Access Restricted</h1>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            You are signed in as a Platform Administrator (<code className="text-amber-400">{currentUser.user}</code>). Platform administrators can only manage hotel accounts from the Operator Console (<code className="text-emerald-400">/admin</code>) and cannot access client hotel endpoints.
+          </p>
+          <div className="pt-2 flex items-center justify-center gap-2">
+            <a
+              href="/admin"
+              className="py-2 px-4 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs rounded-lg transition-colors"
+            >
+              Return to Operator Console
+            </a>
+            <button
+              onClick={handleLogout}
+              className="py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs rounded-lg transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 6. Access Denied: Logged into hotel A, but browsing hotel B's vanity link
   const isUnauthorizedTenant =
     currentHotelPortal &&
     !currentUser.is_superadmin &&
@@ -334,222 +357,181 @@ export default function App() {
 
   return (
     <div className="bg-[#0f0f12] text-zinc-100 min-h-screen flex flex-col selection:bg-white selection:text-black">
-      {/* Superadmin Notification Banner */}
-      {currentUser.is_superadmin && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-1.5 text-xs text-amber-300 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
-            <span>
-              <strong>Platform Service Operator Mode:</strong> You are managing client hotel organizations and provisioning endpoints.
-            </span>
-          </div>
-          {currentHotelPortal && (
-            <button
-              onClick={() => {
-                window.history.pushState({}, '', '/admin');
-                setCurrentPath('/admin');
-                setCurrentHotelPortal(null);
-                setSelectedHotelId('all');
-                setActiveTab('hotels');
-              }}
-              className="text-[11px] font-semibold text-amber-400 hover:text-white underline"
-            >
-              Return to Operator Directory
-            </button>
-          )}
-        </div>
-      )}
-
       {/* Main Navbar */}
       <Navbar
         overview={overview}
         user={currentUser}
         onLogout={handleLogout}
         hotels={hotels}
-        selectedHotelId={selectedHotelId}
-        onSelectHotel={(hId) => {
-          setSelectedHotelId(hId);
-          if (hId !== 'all') {
-            setActiveTab('nodes');
-          }
-        }}
         currentHotel={currentHotelPortal}
       />
 
       {/* Secondary Tab Bar */}
       <div className="border-b border-zinc-800/80 bg-[#141418] px-4 sm:px-6 py-2 flex items-center justify-between">
         <div className="flex items-center gap-1 overflow-x-auto">
-          {/* Operator Hotels Directory Tab (Superadmin Only) */}
-          {currentUser.is_superadmin && !currentHotelPortal && (
-            <button
-              onClick={() => setActiveTab('hotels')}
-              className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                activeTab === 'hotels'
-                  ? 'bg-white text-zinc-950 shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-              }`}
-            >
-              <Building2 className="h-3.5 w-3.5" />
-              <span>Hotels &amp; Endpoints Directory</span>
-            </button>
+          {currentUser.is_superadmin ? (
+            <>
+              <button
+                onClick={() => setActiveTab('hotels')}
+                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeTab === 'hotels'
+                    ? 'bg-white text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                }`}
+              >
+                <Building2 className="h-3.5 w-3.5" />
+                <span>Hotels &amp; Endpoints Directory</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeTab === 'settings'
+                    ? 'bg-white text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                }`}
+              >
+                <Settings className="h-3.5 w-3.5" />
+                <span>Platform Settings &amp; SMTP</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setActiveTab('nodes')}
+                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeTab === 'nodes'
+                    ? 'bg-white text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                }`}
+              >
+                <Server className="h-3.5 w-3.5" />
+                <span>
+                  {currentHotelPortal ? `${currentHotelPortal.name} Branches` : 'Edge Kitchen Nodes'}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('evidence')}
+                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeTab === 'evidence'
+                    ? 'bg-white text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                }`}
+              >
+                <ImageIcon className="h-3.5 w-3.5" />
+                <span>Evidence Vault</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('analytics');
+                  api.getAnalytics().then(setAnalytics).catch(console.error);
+                }}
+                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeTab === 'analytics'
+                    ? 'bg-white text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                }`}
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span>Compliance &amp; Analytics</span>
+              </button>
+            </>
           )}
-
-          <button
-            onClick={() => setActiveTab('nodes')}
-            className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-              activeTab === 'nodes'
-                ? 'bg-white text-zinc-950 shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-            }`}
-          >
-            <Server className="h-3.5 w-3.5" />
-            <span>
-              {currentHotelPortal ? `${currentHotelPortal.name} Branches` : 'Edge Fleet Nodes'}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('evidence')}
-            className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-              activeTab === 'evidence'
-                ? 'bg-white text-zinc-950 shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-            }`}
-          >
-            <ImageIcon className="h-3.5 w-3.5" />
-            <span>Evidence Vault</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('analytics');
-              const effOwner = getEffectiveOwnerId();
-              api.getAnalytics(effOwner).then(setAnalytics).catch(console.error);
-            }}
-            className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-              activeTab === 'analytics'
-                ? 'bg-white text-zinc-950 shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-            }`}
-          >
-            <BarChart3 className="h-3.5 w-3.5" />
-            <span>Compliance &amp; Analytics</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-              activeTab === 'settings'
-                ? 'bg-white text-zinc-950 shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-            }`}
-          >
-            <Settings className="h-3.5 w-3.5" />
-            <span>System Settings</span>
-          </button>
         </div>
 
-        <div>
-          <a
-            href="/api/fleet/export/csv"
-            download
-            className="py-1 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
-          >
-            <FileSpreadsheet className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="hidden sm:inline">Export Fleet CSV</span>
-          </a>
-        </div>
+        {!currentUser.is_superadmin && (
+          <div>
+            <a
+              href="/api/fleet/export/csv"
+              download
+              className="py-1 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5 text-zinc-400" />
+              <span className="hidden sm:inline">Export Hotel CSV</span>
+            </a>
+          </div>
+        )}
       </div>
 
-      {/* KPI Metric Strip */}
-      <KpiStrip overview={overview} />
+      {/* KPI Metric Strip (Hotel Owners Only) */}
+      {!currentUser.is_superadmin && <KpiStrip overview={overview} />}
 
       {/* Main Tab Content */}
       <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
-        {/* Operator Hotels Directory */}
-        {activeTab === 'hotels' && currentUser.is_superadmin && !currentHotelPortal && (
-          <HotelsManagerView
-            hotels={hotels}
-            onRefresh={loadHotels}
-            onSelectHotel={(hId) => {
-              setSelectedHotelId(hId);
-              setActiveTab('nodes');
-            }}
-          />
-        )}
-
-        {/* Nodes Grid */}
-        {activeTab === 'nodes' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-bold text-white">
-                  {currentHotelPortal
-                    ? `${currentHotelPortal.name} — Deployed Kitchen Branches`
-                    : 'Deployed Hotel Edge Devices'}
-                </h2>
-                <p className="text-xs text-zinc-400">
-                  {currentHotelPortal
-                    ? `Live camera feeds, AI telemetry, and remote management for ${currentHotelPortal.name}`
-                    : 'Live health, AI telemetry, and remote management across all hotel kitchens'}
-                </p>
-              </div>
-
-              {selectedHotelId && selectedHotelId !== 'all' && currentUser.is_superadmin && (
-                <button
-                  onClick={() => setSelectedHotelId('all')}
-                  className="text-xs text-emerald-400 hover:text-white font-semibold"
-                >
-                  Clear Hotel Filter (Show All)
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {nodes.length === 0 ? (
-                <div className="col-span-full py-20 text-center text-zinc-500 border border-dashed border-zinc-800 rounded-2xl p-8">
-                  <ServerOff className="h-10 w-10 text-zinc-600 mx-auto mb-3" />
-                  <div className="text-sm font-semibold text-zinc-300">
-                    No Edge Devices Registered Yet
-                  </div>
-                  <div className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
-                    When you run the Smart Hotel Monitoring edge system for this hotel, it will automatically appear here.
+        {currentUser.is_superadmin ? (
+          <>
+            {activeTab === 'hotels' && (
+              <HotelsManagerView
+                hotels={hotels}
+                onRefresh={loadHotels}
+              />
+            )}
+            {activeTab === 'settings' && <SettingsView />}
+          </>
+        ) : (
+          <>
+            {/* Nodes Grid */}
+            {activeTab === 'nodes' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-bold text-white">
+                      {currentHotelPortal
+                        ? `${currentHotelPortal.name} — Deployed Kitchen Branches`
+                        : 'Deployed Hotel Edge Devices'}
+                    </h2>
+                    <p className="text-xs text-zinc-400">
+                      {currentHotelPortal
+                        ? `Live camera feeds, AI telemetry, and remote management for ${currentHotelPortal.name}`
+                        : 'Live health, AI telemetry, and remote management across your kitchens'}
+                    </p>
                   </div>
                 </div>
-              ) : (
-                nodes.map((node) => (
-                  <NodeCard
-                    key={node.id}
-                    node={node}
-                    onApprove={handleApproveNode}
-                    onRequestSnapshot={(n) => setSnapshotNode(n)}
-                    onTriggerSync={handleTriggerSync}
-                    onOpenConfig={(n) => setConfigNode(n)}
-                    onDelete={handleDeleteNode}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* Evidence Vault */}
-        {activeTab === 'evidence' && (
-          <EvidenceVault
-            hotels={hotelNames}
-            onViolationsChanged={refreshData}
-            ownerId={getEffectiveOwnerId()}
-          />
-        )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {nodes.length === 0 ? (
+                    <div className="col-span-full py-20 text-center text-zinc-500 border border-dashed border-zinc-800 rounded-2xl p-8">
+                      <ServerOff className="h-10 w-10 text-zinc-600 mx-auto mb-3" />
+                      <div className="text-sm font-semibold text-zinc-300">
+                        No Edge Devices Registered Yet
+                      </div>
+                      <div className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
+                        When you connect a kitchen appliance using your hotel endpoint and pairing PIN, it will appear here.
+                      </div>
+                    </div>
+                  ) : (
+                    nodes.map((node) => (
+                      <NodeCard
+                        key={node.id}
+                        node={node}
+                        onApprove={handleApproveNode}
+                        onRequestSnapshot={(n) => setSnapshotNode(n)}
+                        onTriggerSync={handleTriggerSync}
+                        onOpenConfig={(n) => setConfigNode(n)}
+                        onDelete={handleDeleteNode}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
 
-        {/* Analytics */}
-        {activeTab === 'analytics' && (
-          <AnalyticsView analytics={analytics} />
-        )}
+            {/* Evidence Vault */}
+            {activeTab === 'evidence' && (
+              <EvidenceVault
+                hotels={hotelNames}
+                onViolationsChanged={refreshData}
+                ownerId={currentUser?.owner_id}
+              />
+            )}
 
-        {/* Settings */}
-        {activeTab === 'settings' && (
-          <SettingsView />
+            {/* Analytics */}
+            {activeTab === 'analytics' && (
+              <AnalyticsView analytics={analytics} />
+            )}
+          </>
         )}
       </main>
 

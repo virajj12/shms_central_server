@@ -171,7 +171,9 @@ export default function Navbar({
         {/* Left Brand */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-700 flex items-center justify-center">
-            {currentHotel ? (
+            {user?.is_superadmin ? (
+              <ShieldAlert className="h-4 w-4 text-amber-400" />
+            ) : currentHotel ? (
               <Building2 className="h-4 w-4 text-emerald-400" />
             ) : (
               <ShieldCheck className="h-4 w-4 text-emerald-400" />
@@ -180,40 +182,40 @@ export default function Navbar({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-white tracking-tight">
-                {currentHotel ? currentHotel.name : 'SHMS Central Fleet'}
+                {user?.is_superadmin
+                  ? 'SHMS Platform Operator Console'
+                  : currentHotel
+                  ? currentHotel.name
+                  : companyName}
               </span>
-              <span className="px-1.5 py-0.2 text-[9px] font-mono bg-zinc-800 text-zinc-300 rounded border border-zinc-700">
-                {user?.is_superadmin ? 'SUPERADMIN' : 'HOTEL PORTAL'}
+              <span
+                className={`px-1.5 py-0.2 text-[9px] font-mono rounded border font-semibold ${
+                  user?.is_superadmin
+                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                    : 'bg-zinc-800 text-zinc-300 border-zinc-700'
+                }`}
+              >
+                {user?.is_superadmin ? 'OPERATOR' : 'HOTEL PORTAL'}
               </span>
             </div>
             <div className="text-[10px] text-zinc-400">
-              {currentHotel
-                ? 'Dedicated Hotel Kitchen Fleet Management'
-                : 'Multi-Edge Hotel CCTV Surveillance & Compliance Hub'}
+              {user?.is_superadmin
+                ? 'Hotel Tenants & Endpoint Provisioning Management'
+                : 'Dedicated Hotel Kitchen Fleet Management'}
             </div>
           </div>
         </div>
 
-        {/* Center: Superadmin Hotel Switcher OR Hotel Vanity Link */}
+        {/* Center: Navigation info */}
         <div className="hidden md:flex items-center gap-2">
           {user?.is_superadmin ? (
-            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1">
-              <Building2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-              <span className="text-[11px] text-zinc-400 font-semibold select-none">Scope:</span>
-              <select
-                value={selectedHotelId || 'all'}
-                onChange={(e) => onSelectHotel?.(e.target.value)}
-                className="bg-transparent text-xs text-white font-semibold focus:outline-none cursor-pointer max-w-[210px] truncate"
-              >
-                <option value="all" className="bg-zinc-900 text-white">
-                  🌐 All Hotels (Global Fleet)
-                </option>
-                {hotels.map((h) => (
-                  <option key={h.id} value={h.id} className="bg-zinc-900 text-white">
-                    🏨 {h.name} (/{h.slug})
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
+              <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+              <span className="text-zinc-300 font-medium">
+                {hotels.length} Hotel Organization{hotels.length === 1 ? '' : 's'} Managed
+              </span>
+              <span className="text-zinc-600">&bull;</span>
+              <span className="font-mono text-zinc-400 text-[11px]">{clock}</span>
             </div>
           ) : (
             hotelSlug && (
@@ -235,72 +237,84 @@ export default function Navbar({
             )
           )}
 
-          {/* Health Pill */}
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] pulse-emerald" />
-            <span className="text-zinc-300 font-medium">
-              {online} of {total} Node{total === 1 ? '' : 's'} Online
-            </span>
-            <span className="text-zinc-600">&bull;</span>
-            <span className="font-mono text-zinc-400 text-[11px]">{clock}</span>
-          </div>
+          {/* Health Pill (Hotel Tenants Only) */}
+          {!user?.is_superadmin && (
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] pulse-emerald" />
+              <span className="text-zinc-300 font-medium">
+                {online} of {total} Node{total === 1 ? '' : 's'} Online
+              </span>
+              <span className="text-zinc-600">&bull;</span>
+              <span className="font-mono text-zinc-400 text-[11px]">{clock}</span>
+            </div>
+          )}
         </div>
 
         {/* Right User Actions */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <button
-            onClick={copyOwnerId}
-            className="hidden xl:flex items-center gap-2 h-8 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-left transition-colors"
-            title={`Copy owner ID: ${ownerId}`}
-          >
-            <div className="min-w-0">
-              <div className="text-[9px] text-zinc-400 font-semibold truncate max-w-[150px]">
-                {companyName}
-              </div>
-              <div className="text-[10px] font-mono text-zinc-200 truncate max-w-[150px]">
-                {ownerId}
-              </div>
-            </div>
-            {copied ? (
-              <Check className="h-3.5 w-3.5 text-emerald-400" />
-            ) : (
-              <Copy className="h-3.5 w-3.5 text-zinc-500" />
-            )}
-          </button>
+          {!user?.is_superadmin && (
+            <>
+              <button
+                onClick={copyOwnerId}
+                className="hidden xl:flex items-center gap-2 h-8 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-left transition-colors"
+                title={`Copy owner ID: ${ownerId}`}
+              >
+                <div className="min-w-0">
+                  <div className="text-[9px] text-zinc-400 font-semibold truncate max-w-[150px]">
+                    {companyName}
+                  </div>
+                  <div className="text-[10px] font-mono text-zinc-200 truncate max-w-[150px]">
+                    {ownerId}
+                  </div>
+                </div>
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5 text-zinc-500" />
+                )}
+              </button>
 
-          <button
-            onClick={() => {
-              setShowPairingModal(true);
-              if (!generatedCode) handleGeneratePairingCode();
-            }}
-            className="h-8 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
-            title="Generate a 6-digit PIN to pair a new kitchen edge server"
-          >
-            <KeyRound className="h-3.5 w-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Pairing PIN</span>
-          </button>
+              <button
+                onClick={() => {
+                  setShowPairingModal(true);
+                  if (!generatedCode) handleGeneratePairingCode();
+                }}
+                className="h-8 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                title="Generate a 6-digit PIN to pair a new kitchen edge server"
+              >
+                <KeyRound className="h-3.5 w-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Pairing PIN</span>
+              </button>
 
-          <button
-            onClick={() => setShowPending(true)}
-            className="relative h-8 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
-            title="Review pending edge enrollments"
-          >
-            <Inbox className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Approvals</span>
-            {pending.length > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-amber-400 text-zinc-950 text-[10px] font-bold flex items-center justify-center">
-                {pending.length}
-              </span>
-            )}
-          </button>
+              <button
+                onClick={() => setShowPending(true)}
+                className="relative h-8 px-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                title="Review pending edge enrollments"
+              >
+                <Inbox className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Approvals</span>
+                {pending.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-amber-400 text-zinc-950 text-[10px] font-bold flex items-center justify-center">
+                    {pending.length}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
 
           <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400">
             <UserCheck className="h-3.5 w-3.5 text-zinc-300" />
             <span className="font-semibold text-zinc-200">
               {user?.username || user?.user || 'Admin'}
             </span>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-zinc-800 text-zinc-400">
-              {user?.is_superadmin ? 'SUPERADMIN' : 'HOTEL ADMIN'}
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                user?.is_superadmin
+                  ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30 font-bold'
+                  : 'bg-zinc-800 text-zinc-400'
+              }`}
+            >
+              {user?.is_superadmin ? 'OPERATOR' : 'HOTEL ADMIN'}
             </span>
           </div>
 

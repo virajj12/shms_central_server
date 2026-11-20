@@ -16,16 +16,23 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
+  Settings,
 } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function HotelsManagerView({
   hotels = [],
   onRefresh,
-  onSelectHotel,
 }) {
   const [search, setSearch] = useState('');
   const [copiedSlug, setCopiedSlug] = useState(null);
+
+  // Edit Hotel Details Modal
+  const [editModalHotel, setEditModalHotel] = useState(null);
+  const [editFormData, setEditFormData] = useState({ company_name: '', contact_email: '', max_kitchens: 20 });
+  const [editing, setEditing] = useState(false);
+  const [editSuccess, setEditSuccess] = useState('');
+  const [editError, setEditError] = useState('');
 
   // Provision Modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -107,6 +114,27 @@ export default function HotelsManagerView({
       onRefresh();
     } catch (err) {
       alert(`Error updating hotel status: ${err.message}`);
+    }
+  };
+
+  const handleUpdateHotel = async (e) => {
+    e.preventDefault();
+    if (!editModalHotel) return;
+    setEditing(true);
+    setEditError('');
+    setEditSuccess('');
+    try {
+      await api.updateHotel(editModalHotel.id, editFormData);
+      setEditSuccess('Hotel details updated successfully!');
+      setTimeout(() => {
+        setEditModalHotel(null);
+        setEditSuccess('');
+        onRefresh();
+      }, 1000);
+    } catch (err) {
+      setEditError(err.message || 'Failed to update hotel details');
+    } finally {
+      setEditing(false);
     }
   };
 
@@ -309,42 +337,33 @@ export default function HotelsManagerView({
                     </span>
                   </div>
 
-                  {/* Vanity Link Pill (Instagram style username) */}
+                  {/* Client Endpoint Handle Pill */}
                   <div className="mt-3.5 p-2 rounded-xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-1.5 min-w-0 font-mono">
-                      <span className="text-zinc-500 shrink-0">URL:</span>
-                      <a
-                        href={`/${hotel.slug}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-emerald-400 hover:text-emerald-300 font-semibold truncate hover:underline"
-                        title={portalUrl}
-                      >
+                      <span className="text-zinc-500 shrink-0">Client Endpoint:</span>
+                      <span className="text-emerald-400 font-semibold truncate select-all">
                         /{hotel.slug}
-                      </a>
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={(e) => handleCopyLink(hotel.slug, e)}
-                        className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
-                        title="Copy Hotel Portal Link"
+                        className="py-1 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                        title="Copy client login link to provide to hotel owner"
                       >
                         {copiedSlug === hotel.slug ? (
-                          <Check className="h-3.5 w-3.5 text-emerald-400" />
+                          <>
+                            <Check className="h-3 w-3 text-emerald-400" />
+                            <span className="text-emerald-400">Copied!</span>
+                          </>
                         ) : (
-                          <Copy className="h-3.5 w-3.5" />
+                          <>
+                            <Copy className="h-3 w-3" />
+                            <span>Copy Link</span>
+                          </>
                         )}
                       </button>
-                      <a
-                        href={`/${hotel.slug}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
-                        title="Open Hotel Portal in New Tab"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
                     </div>
                   </div>
 
@@ -353,28 +372,37 @@ export default function HotelsManagerView({
                     <div>
                       <span className="text-zinc-500 text-[10px] block">Kitchen Branches</span>
                       <span className="font-mono text-zinc-200 font-semibold block mt-0.5">
-                        {hotel.kitchen_count} Deployed ({hotel.online_count} Online)
+                        {hotel.kitchen_count} of {hotel.max_kitchens || 20} Max ({hotel.online_count} Online)
                       </span>
                     </div>
 
                     <div>
-                      <span className="text-zinc-500 text-[10px] block">Hotel Admin</span>
-                      <span className="font-mono text-zinc-300 font-semibold block mt-0.5 truncate" title={hotel.admin_username || 'N/A'}>
-                        {hotel.admin_username || 'admin'}
+                      <span className="text-zinc-500 text-[10px] block">Contact / Admin</span>
+                      <span className="font-mono text-zinc-300 font-semibold block mt-0.5 truncate" title={hotel.contact_email || hotel.admin_username || 'N/A'}>
+                        {hotel.contact_email || hotel.admin_username || 'admin'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Actions Toolbar */}
+                {/* Actions Toolbar (Superadmin Operator Only Manages) */}
                 <div className="mt-5 pt-3.5 border-t border-zinc-800 flex items-center justify-between gap-1.5">
                   <button
-                    onClick={() => onSelectHotel(hotel.id)}
+                    onClick={() => {
+                      setEditModalHotel(hotel);
+                      setEditFormData({
+                        company_name: hotel.name,
+                        contact_email: hotel.contact_email || '',
+                        max_kitchens: hotel.max_kitchens || 20,
+                      });
+                      setEditError('');
+                      setEditSuccess('');
+                    }}
                     className="flex-1 py-1.5 px-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
-                    title="View and manage branches for this hotel"
+                    title="Edit hotel details and kitchen quotas"
                   >
-                    <Server className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>Manage Branches</span>
+                    <Settings className="h-3.5 w-3.5 text-zinc-400" />
+                    <span>Edit Quota</span>
                   </button>
 
                   <button
@@ -648,6 +676,108 @@ export default function HotelsManagerView({
                 >
                   {resetting && <Loader2 className="h-3 w-3 animate-spin" />}
                   <span>{resetting ? 'Updating...' : 'Save Password'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Hotel Details & Quotas */}
+      {editModalHotel && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4 text-emerald-400" />
+                <h3 className="text-sm font-bold text-white">Edit Hotel Settings &amp; Quotas</h3>
+              </div>
+              <button
+                onClick={() => setEditModalHotel(null)}
+                className="text-zinc-500 hover:text-zinc-300 text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="text-xs text-zinc-400">
+              Configure parameters for <strong className="text-white">{editModalHotel.name}</strong> (Endpoint: <code className="text-emerald-400">/{editModalHotel.slug}</code>).
+            </div>
+
+            {editError && (
+              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{editError}</span>
+              </div>
+            )}
+
+            {editSuccess && (
+              <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>{editSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateHotel} className="space-y-3.5 text-xs">
+              <div>
+                <label className="text-zinc-300 font-semibold block mb-1">
+                  Hotel Company Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editFormData.company_name}
+                  onChange={(e) => setEditFormData({ ...editFormData, company_name: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-zinc-300 font-semibold block mb-1">
+                  Contact / Notifications Email
+                </label>
+                <input
+                  type="email"
+                  value={editFormData.contact_email}
+                  onChange={(e) => setEditFormData({ ...editFormData, contact_email: e.target.value })}
+                  placeholder="admin@hotel.com"
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-zinc-300 font-semibold block mb-1">
+                  Max Kitchen Appliances Allowed
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  required
+                  value={editFormData.max_kitchens}
+                  onChange={(e) => setEditFormData({ ...editFormData, max_kitchens: Number(e.target.value) })}
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                />
+                <span className="text-[10px] text-zinc-500 block mt-0.5">
+                  Limits the maximum number of edge kitchen computers this hotel can pair.
+                </span>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditModalHotel(null)}
+                  className="py-1.5 px-3 rounded-lg border border-zinc-800 text-zinc-400 hover:bg-zinc-900"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editing}
+                  className="py-1.5 px-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {editing && <Loader2 className="h-3 w-3 animate-spin" />}
+                  <span>{editing ? 'Saving...' : 'Save Settings'}</span>
                 </button>
               </div>
             </form>

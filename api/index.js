@@ -6,6 +6,8 @@ import {
   createSessionToken,
   SESSION_COOKIE_NAME,
   requireAdmin,
+  requireSuperadmin,
+  requireHotelTenant,
   verifySessionToken,
 } from '../lib/auth.js';
 import { sendPasswordResetEmail, getEmailTransporter } from '../lib/email.js';
@@ -201,11 +203,8 @@ app.post('/api/auth/forgot_password/verify', async (req, res) => {
 });
 
 // Test SMTP App Password configuration
-app.post('/api/admin/email/test', requireAdmin, async (req, res) => {
+app.post('/api/admin/email/test', requireSuperadmin, async (req, res) => {
   try {
-    if (!req.user.is_superadmin) {
-      return res.status(403).json({ detail: 'Superadmin privileges required' });
-    }
     const { test_email } = req.body || {};
     const targetEmail = test_email || req.body?.smtp_user || 'test@example.com';
 
@@ -270,11 +269,8 @@ app.get('/api/public/hotel/:slug', async (req, res) => {
 });
 
 // ── Multi-Tenant Hotel Management (Superadmin Only) ─────────────────────────
-app.get('/api/admin/hotels', requireAdmin, async (req, res) => {
+app.get('/api/admin/hotels', requireSuperadmin, async (req, res) => {
   try {
-    if (!req.user.is_superadmin) {
-      return res.status(403).json({ detail: 'Superadmin privileges required' });
-    }
     const hotels = await db.listHotels();
     return res.json(hotels);
   } catch (err) {
@@ -282,11 +278,8 @@ app.get('/api/admin/hotels', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/hotels', requireAdmin, async (req, res) => {
+app.post('/api/admin/hotels', requireSuperadmin, async (req, res) => {
   try {
-    if (!req.user.is_superadmin) {
-      return res.status(403).json({ detail: 'Superadmin privileges required' });
-    }
     const result = await db.createHotel(req.body || {});
     db.logAudit(req.user.sub, 'CREATE_HOTEL', null, `Created hotel ${result.hotel.name} (/@${result.hotel.slug})`);
     return res.json(result);
@@ -295,11 +288,8 @@ app.post('/api/admin/hotels', requireAdmin, async (req, res) => {
   }
 });
 
-app.put('/api/admin/hotels/:id', requireAdmin, async (req, res) => {
+app.put(['/api/admin/hotels/:id', '/api/admin/hotels/:id/update'], requireSuperadmin, async (req, res) => {
   try {
-    if (!req.user.is_superadmin) {
-      return res.status(403).json({ detail: 'Superadmin privileges required' });
-    }
     const hotel = await db.updateHotel(req.params.id, req.body || {});
     db.logAudit(req.user.sub, 'UPDATE_HOTEL', req.params.id, `Updated hotel ${req.params.id}`);
     return res.json(hotel);
@@ -308,11 +298,18 @@ app.put('/api/admin/hotels/:id', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/hotels/:id/reset_password', requireAdmin, async (req, res) => {
+app.patch('/api/admin/hotels/:id', requireSuperadmin, async (req, res) => {
   try {
-    if (!req.user.is_superadmin) {
-      return res.status(403).json({ detail: 'Superadmin privileges required' });
-    }
+    const hotel = await db.updateHotel(req.params.id, req.body || {});
+    db.logAudit(req.user.sub, 'UPDATE_HOTEL', req.params.id, `Updated hotel ${req.params.id}`);
+    return res.json(hotel);
+  } catch (err) {
+    return res.status(400).json({ detail: err.message });
+  }
+});
+
+app.post('/api/admin/hotels/:id/reset_password', requireSuperadmin, async (req, res) => {
+  try {
     const { new_password } = req.body || {};
     await db.resetHotelAdminPassword(req.params.id, new_password);
     db.logAudit(req.user.sub, 'RESET_HOTEL_PASSWORD', req.params.id, `Reset password for hotel ${req.params.id}`);
@@ -322,11 +319,8 @@ app.post('/api/admin/hotels/:id/reset_password', requireAdmin, async (req, res) 
   }
 });
 
-app.delete('/api/admin/hotels/:id', requireAdmin, async (req, res) => {
+app.delete('/api/admin/hotels/:id', requireSuperadmin, async (req, res) => {
   try {
-    if (!req.user.is_superadmin) {
-      return res.status(403).json({ detail: 'Superadmin privileges required' });
-    }
     await db.deleteHotel(req.params.id);
     db.logAudit(req.user.sub, 'DELETE_HOTEL', req.params.id, `Deleted hotel ${req.params.id}`);
     return res.json({ success: true });
@@ -335,43 +329,41 @@ app.delete('/api/admin/hotels/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// ── Fleet Overview & KPIs ───────────────────────────────────────────────────
-
-app.get('/api/fleet/overview', requireAdmin, async (req, res) => {
+// ── Fleet Overview & KPIs (Hotel Tenant Only) ──────────────────────────────
+app.get('/api/fleet/overview', requireHotelTenant, async (req, res) => {
   try {
-    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
-    const kpis = await db.getFleetKpis(targetOwnerId);
+    const kpis = await db.getFleetKpis(req.user.owner_id);
     return res.json(kpis);
   } catch (err) {
     return res.status(500).json({ detail: err.message });
   }
 });
 
-app.get('/api/fleet/owner_info', requireAdmin, async (req, res) => {
+app.get('/api/fleet/owner_info', requireHotelTenant, async (req, res) => {
   try {
-    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || req.user.owner_id) : req.user.owner_id;
-    const owner = await db.getOwner(targetOwnerId);
-    return res.json(owner || { id: targetOwnerId, company_name: 'Hotel Management' });
+    const owner = await db.getOwner(req.user.owner_id);
+    return res.json(owner || { id: req.user.owner_id, company_name: 'Hotel Management' });
   } catch (err) {
     return res.status(500).json({ detail: err.message });
   }
 });
 
-// ── Enrollment & Pairing ────────────────────────────────────────────────────
+// ── Enrollment & Pairing (Hotel Tenant Only) ────────────────────────────────
 
-app.get('/api/fleet/enrollment/pending', requireAdmin, async (req, res) => {
+app.get('/api/fleet/enrollment/pending', requireHotelTenant, async (req, res) => {
   try {
-    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
-    const pending = await db.listPendingEnrollments(targetOwnerId);
+    const pending = await db.listPendingEnrollments(req.user.owner_id);
     return res.json({ success: true, edges: pending });
   } catch (err) {
     return res.status(500).json({ detail: err.message });
   }
 });
 
-app.post('/api/fleet/enrollment/:requestId/approve', requireAdmin, async (req, res) => {
+app.post('/api/fleet/enrollment/:requestId/approve', requireHotelTenant, async (req, res) => {
   try {
     const { requestId } = req.params;
+    const node = await db.getEdgeEnrollment(requestId, req.user.owner_id);
+    if (!node) return res.status(404).json({ detail: 'Enrollment request not found for your hotel' });
     const result = await db.setEdgeEnrollmentStatus(requestId, 'approved', req.user.sub);
     db.logAudit(req.user.sub, 'APPROVE_ENROLLMENT', result.id, `Approved request ${requestId}`);
     return res.json({ success: true, node: result });
@@ -380,10 +372,12 @@ app.post('/api/fleet/enrollment/:requestId/approve', requireAdmin, async (req, r
   }
 });
 
-app.post('/api/fleet/enrollment/:requestId/reject', requireAdmin, async (req, res) => {
+app.post('/api/fleet/enrollment/:requestId/reject', requireHotelTenant, async (req, res) => {
   try {
     const { requestId } = req.params;
-    const { reason = 'Rejected by administrator' } = req.body || {};
+    const { reason = 'Rejected by hotel management' } = req.body || {};
+    const node = await db.getEdgeEnrollment(requestId, req.user.owner_id);
+    if (!node) return res.status(404).json({ detail: 'Enrollment request not found for your hotel' });
     const result = await db.setEdgeEnrollmentStatus(requestId, 'rejected', req.user.sub, reason);
     db.logAudit(req.user.sub, 'REJECT_ENROLLMENT', result.id, `Reason: ${reason}`);
     return res.json({ success: true, node: result });
@@ -392,53 +386,54 @@ app.post('/api/fleet/enrollment/:requestId/reject', requireAdmin, async (req, re
   }
 });
 
-app.post('/api/fleet/pairing_codes', requireAdmin, async (req, res) => {
+app.post('/api/fleet/pairing_codes', requireHotelTenant, async (req, res) => {
   try {
-    const { hotel_name, kitchen_name, ttl_minutes = 60, owner_id } = req.body || {};
-    if (!hotel_name) {
-      return res.status(400).json({ detail: 'hotel_name is required' });
-    }
-
-    const targetOwnerId = req.user.is_superadmin ? (owner_id || req.user.owner_id) : req.user.owner_id;
+    const { hotel_name, kitchen_name, ttl_minutes = 60 } = req.body || {};
+    const owner = await db.getOwner(req.user.owner_id);
     const pairing = await db.createPairingCode(
-      targetOwnerId,
-      hotel_name,
+      req.user.owner_id,
+      hotel_name || owner?.company_name || 'Hotel',
       kitchen_name || 'Main Kitchen',
       req.user.sub,
       ttl_minutes
     );
 
-    db.logAudit(req.user.sub, 'CREATE_PAIRING_CODE', null, `Created PIN ${pairing.code} for ${hotel_name}`);
+    db.logAudit(req.user.sub, 'CREATE_PAIRING_CODE', null, `Created PIN ${pairing.code} for ${hotel_name || owner?.company_name}`);
     return res.json(pairing);
   } catch (err) {
     return res.status(500).json({ detail: err.message });
   }
 });
 
-// ── Fleet Nodes & Remote Commands ───────────────────────────────────────────
+// ── Fleet Nodes & Remote Commands (Hotel Tenant Only) ───────────────────────
 
-app.get('/api/fleet/nodes', requireAdmin, async (req, res) => {
+app.get('/api/fleet/nodes', requireHotelTenant, async (req, res) => {
   try {
-    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
-    const nodes = await db.listNodes(targetOwnerId);
+    const nodes = await db.listNodes(req.user.owner_id);
     return res.json(nodes);
   } catch (err) {
     return res.status(500).json({ detail: err.message });
   }
 });
 
-app.get('/api/fleet/nodes/:id', requireAdmin, async (req, res) => {
+app.get('/api/fleet/nodes/:id', requireHotelTenant, async (req, res) => {
   try {
     const node = await db.getNode(req.params.id);
-    if (!node) return res.status(404).json({ detail: 'Edge node not found' });
+    if (!node || node.owner_id !== req.user.owner_id) {
+      return res.status(404).json({ detail: 'Edge node not found' });
+    }
     return res.json(node);
   } catch (err) {
     return res.status(500).json({ detail: err.message });
   }
 });
 
-app.delete('/api/fleet/nodes/:id', requireAdmin, async (req, res) => {
+app.delete('/api/fleet/nodes/:id', requireHotelTenant, async (req, res) => {
   try {
+    const node = await db.getNode(req.params.id);
+    if (!node || node.owner_id !== req.user.owner_id) {
+      return res.status(404).json({ detail: 'Edge node not found for your hotel' });
+    }
     const success = await db.deleteNode(req.params.id);
     db.logAudit(req.user.sub, 'DELETE_NODE', req.params.id, 'Edge node deleted');
     return res.json({ success });
@@ -447,9 +442,13 @@ app.delete('/api/fleet/nodes/:id', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/fleet/nodes/:id/config', requireAdmin, async (req, res) => {
+app.post('/api/fleet/nodes/:id/config', requireHotelTenant, async (req, res) => {
   try {
     const edgeId = req.params.id;
+    const node = await db.getNode(edgeId);
+    if (!node || node.owner_id !== req.user.owner_id) {
+      return res.status(404).json({ detail: 'Edge node not found for your hotel' });
+    }
     const configPayload = req.body || {};
     const command = await db.queueNodeCommand(edgeId, 'update_config', configPayload);
     db.logAudit(req.user.sub, 'UPDATE_CONFIG', edgeId, JSON.stringify(configPayload));
@@ -459,9 +458,13 @@ app.post('/api/fleet/nodes/:id/config', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/fleet/nodes/:id/command', requireAdmin, async (req, res) => {
+app.post('/api/fleet/nodes/:id/command', requireHotelTenant, async (req, res) => {
   try {
     const edgeId = req.params.id;
+    const node = await db.getNode(edgeId);
+    if (!node || node.owner_id !== req.user.owner_id) {
+      return res.status(404).json({ detail: 'Edge node not found for your hotel' });
+    }
     const { type, payload = {} } = req.body || {};
     const command = await db.queueNodeCommand(edgeId, type || 'custom_command', payload);
     return res.json({ success: true, command_id: command.id });
@@ -470,9 +473,13 @@ app.post('/api/fleet/nodes/:id/command', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/fleet/nodes/:id/trigger_sync', requireAdmin, async (req, res) => {
+app.post('/api/fleet/nodes/:id/trigger_sync', requireHotelTenant, async (req, res) => {
   try {
     const edgeId = req.params.id;
+    const node = await db.getNode(edgeId);
+    if (!node || node.owner_id !== req.user.owner_id) {
+      return res.status(404).json({ detail: 'Edge node not found for your hotel' });
+    }
     const command = await db.queueNodeCommand(edgeId, 'trigger_sync', {});
     return res.json({ success: true, message: 'Sync command queued for edge node' });
   } catch (err) {
@@ -481,16 +488,18 @@ app.post('/api/fleet/nodes/:id/trigger_sync', requireAdmin, async (req, res) => 
 });
 
 /**
- * On-demand live snapshot request
+ * On-demand live snapshot request (Hotel Owner Only)
  * Queues 'capture_snapshot' command in edge_commands and awaits the reply (up to 7 seconds).
  */
-app.post('/api/fleet/nodes/:id/request_snapshot', requireAdmin, async (req, res) => {
+app.post('/api/fleet/nodes/:id/request_snapshot', requireHotelTenant, async (req, res) => {
   try {
     const edgeId = req.params.id;
     const { camera_id = null } = req.body || {};
 
     const node = await db.getNode(edgeId);
-    if (!node) return res.status(404).json({ detail: 'Edge node not found' });
+    if (!node || node.owner_id !== req.user.owner_id) {
+      return res.status(404).json({ detail: 'Edge node not found for your hotel' });
+    }
 
     // Queue command for edge
     const command = await db.queueNodeCommand(edgeId, 'capture_snapshot', { camera_id });
@@ -535,13 +544,12 @@ app.post('/api/fleet/nodes/:id/request_snapshot', requireAdmin, async (req, res)
   }
 });
 
-// ── Violations & Analytics ──────────────────────────────────────────────────
+// ── Violations & Analytics (Hotel Tenant Only) ──────────────────────────────
 
-app.get('/api/fleet/violations', requireAdmin, async (req, res) => {
+app.get('/api/fleet/violations', requireHotelTenant, async (req, res) => {
   try {
-    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
     const params = {
-      owner_id: targetOwnerId,
+      owner_id: req.user.owner_id,
       category: req.query.category,
       hotel_name: req.query.hotel_name,
       edge_id: req.query.edge_id,
@@ -555,7 +563,7 @@ app.get('/api/fleet/violations', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/fleet/violations/:id/acknowledge', requireAdmin, async (req, res) => {
+app.post('/api/fleet/violations/:id/acknowledge', requireHotelTenant, async (req, res) => {
   try {
     const success = await db.acknowledgeViolation(req.params.id, req.user.sub);
     return res.json({ success });
@@ -564,17 +572,16 @@ app.post('/api/fleet/violations/:id/acknowledge', requireAdmin, async (req, res)
   }
 });
 
-app.get('/api/fleet/analytics', requireAdmin, async (req, res) => {
+app.get('/api/fleet/analytics', requireHotelTenant, async (req, res) => {
   try {
-    const targetOwnerId = req.user.is_superadmin ? (req.query.owner_id || null) : req.user.owner_id;
-    const data = await db.getAnalytics(targetOwnerId);
+    const data = await db.getAnalytics(req.user.owner_id);
     return res.json(data);
   } catch (err) {
     return res.status(500).json({ detail: err.message });
   }
 });
 
-app.get('/api/settings', requireAdmin, async (req, res) => {
+app.get('/api/settings', requireSuperadmin, async (req, res) => {
   try {
     const settings = await db.getSettings();
     return res.json(settings);
@@ -583,7 +590,7 @@ app.get('/api/settings', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/settings', requireAdmin, async (req, res) => {
+app.post('/api/settings', requireSuperadmin, async (req, res) => {
   try {
     await db.setSettings(req.body || {});
     return res.json({ success: true });
