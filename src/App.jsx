@@ -267,12 +267,12 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#0f0f12] text-zinc-100 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-[#18181c] border border-zinc-800 rounded-2xl p-8 text-center space-y-4 shadow-2xl">
-          <div className="h-12 w-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-amber-400">
+          <div className="h-12 w-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-300">
             <Building2 className="h-6 w-6" />
           </div>
           <h1 className="text-xl font-bold text-white">Hotel Endpoint Not Found</h1>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            The endpoint <code className="text-emerald-400">{window.location.pathname}</code> does not match any registered hotel organization.
+            The endpoint <code className="text-zinc-200 font-mono">{window.location.pathname}</code> does not match any registered hotel organization.
           </p>
           <div className="pt-2 flex items-center justify-center gap-2">
             <a
@@ -361,32 +361,32 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#0f0f12] text-zinc-100 flex items-center justify-center p-4">
         <Card className="max-w-md w-full p-8 text-center space-y-4 shadow-2xl">
-          <div className="h-12 w-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+          <div className="h-12 w-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-300">
             <ShieldAlert className="h-6 w-6" />
           </div>
           <h1 className="text-lg font-bold text-white">Hotel Endpoint Access Restricted</h1>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            You are signed in as the Platform Operator (<code className="text-amber-400">{currentUser.user}</code>).
-            Platform operators manage hotel accounts from the Operator Console (<code className="text-emerald-400">/admin</code>) and cannot access client surveillance feeds directly.
+            You are signed in as the Platform Operator (<code className="text-zinc-200 font-mono">{currentUser.user}</code>).
+            Platform operators manage hotel accounts from the Operator Console (<code className="text-zinc-200 font-mono">/admin</code>) and cannot access client surveillance feeds directly.
           </p>
           <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-left text-xs space-y-1.5">
             <div className="text-zinc-300 font-semibold flex items-center gap-1.5">
-              <Building2 className="h-4 w-4 text-emerald-400" />
+              <Building2 className="h-4 w-4 text-zinc-400" />
               <span>{currentHotelPortal.name} Client Portal</span>
             </div>
             <div className="text-zinc-400 text-[11px]">
               To manage this hotel's branches, cameras, and pairing PINs, sign in with this hotel's owner account:
             </div>
             <div className="text-[11px] font-mono bg-zinc-950 p-2 rounded-lg border border-zinc-800 text-zinc-300">
-              Username: <span className="text-emerald-400 font-bold">{currentHotelPortal.slug}</span><br />
-              Default Password: <span className="text-amber-300 font-bold">grand123</span> <span className="text-zinc-500">(or set in /admin)</span>
+              Username: <span className="text-zinc-100 font-bold">{currentHotelPortal.slug}</span><br />
+              Default Password: <span className="text-zinc-100 font-bold">grand123</span> <span className="text-zinc-500">(or set in /admin)</span>
             </div>
           </div>
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
             <Button
-              variant="emerald"
+              variant="default"
               onClick={handleLogout}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto font-bold"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Switch to Hotel Login</span>

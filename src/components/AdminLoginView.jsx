@@ -50,11 +50,11 @@ export default function AdminLoginView({ onLoginSuccess }) {
         {/* Brand Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl mb-3">
-            <ShieldAlert className="h-7 w-7 text-amber-400" />
+            <ShieldAlert className="h-7 w-7 text-zinc-200" />
           </div>
 
           <div className="mb-2">
-            <Badge variant="warning">
+            <Badge variant="outline" className="text-zinc-300">
               SERVICE PROVIDER OPERATOR
             </Badge>
           </div>
@@ -90,7 +90,7 @@ export default function AdminLoginView({ onLoginSuccess }) {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin"
-                  className="pl-9 font-mono focus-visible:border-amber-500 focus-visible:ring-amber-500"
+                  className="pl-9 font-mono"
                 />
               </div>
             </div>
@@ -108,15 +108,16 @@ export default function AdminLoginView({ onLoginSuccess }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="pl-9 font-mono focus-visible:border-amber-500 focus-visible:ring-amber-500"
+                  className="pl-9 font-mono"
                 />
               </div>
             </div>
 
             <Button
               type="submit"
+              variant="default"
               disabled={loading}
-              className="w-full mt-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold"
+              className="w-full mt-2 font-bold"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

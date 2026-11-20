@@ -115,7 +115,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
         {/* Brand Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl mb-3">
-            <Building2 className="h-7 w-7 text-emerald-400" />
+            <Building2 className="h-7 w-7 text-zinc-200" />
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight text-white">
@@ -149,7 +149,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter hotel endpoint (e.g. your-hotel)"
-                  className="pl-9 font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
+                  className="pl-9 font-mono"
                 />
               </div>
               <span className="text-[10px] text-zinc-500 block">
@@ -171,7 +171,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                     setForgotSuccess('');
                     setShowForgotModal(true);
                   }}
-                  className="text-[11px] text-emerald-400 hover:text-emerald-300 hover:underline cursor-pointer"
+                  className="text-[11px] text-zinc-400 hover:text-white hover:underline cursor-pointer"
                 >
                   Forgot Password?
                 </button>
@@ -185,16 +185,16 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="pl-9 font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
+                  className="pl-9 font-mono"
                 />
               </div>
             </div>
 
             <Button
               type="submit"
-              variant="emerald"
+              variant="default"
               disabled={loading}
-              className="w-full mt-2"
+              className="w-full mt-2 font-bold"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -225,7 +225,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
         <DialogContent className="max-w-md">
           <DialogHeader className="pb-3 border-b border-zinc-800">
             <div className="flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-emerald-400" />
+              <KeyRound className="h-5 w-5 text-zinc-300" />
               <DialogTitle className="text-sm font-bold text-white">Reset Hotel Password</DialogTitle>
             </div>
             <DialogDescription className="text-xs text-zinc-400 pt-1">

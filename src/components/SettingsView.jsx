@@ -107,7 +107,7 @@ export default function SettingsView() {
         <Card className="p-6 space-y-4">
           <CardHeader className="p-0 space-y-1">
             <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              <ShieldCheck className="h-4 w-4 text-zinc-300" />
               <span>Fleet Alerts &amp; Heartbeat Thresholds</span>
             </CardTitle>
             <CardDescription className="text-xs text-zinc-400">
@@ -163,7 +163,7 @@ export default function SettingsView() {
           <CardHeader className="p-0 space-y-1">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
-                <Mail className="h-4 w-4 text-emerald-400" />
+                <Mail className="h-4 w-4 text-zinc-300" />
                 <span>Email Service &amp; Google App Password (SMTP)</span>
               </CardTitle>
               <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono">

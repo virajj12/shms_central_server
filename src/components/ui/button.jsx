@@ -17,9 +17,9 @@ const buttonVariants = cva(
           "bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white active:scale-[0.98]",
         ghost:
           "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 active:scale-[0.98]",
-        link: "text-emerald-400 underline-offset-4 hover:underline",
+        link: "text-zinc-300 hover:text-white underline-offset-4 hover:underline",
         emerald:
-          "bg-emerald-500 text-zinc-950 font-bold hover:bg-emerald-400 shadow-lg shadow-emerald-950/40 active:scale-[0.98]",
+          "bg-white text-zinc-950 font-semibold shadow-sm hover:bg-zinc-200 active:scale-[0.98]",
       },
       size: {
         default: "h-9 px-4 py-2",

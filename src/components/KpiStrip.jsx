@@ -44,7 +44,7 @@ export default function KpiStrip({ overview = {} }) {
           <CardDescription className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
             Pest Incursions
           </CardDescription>
-          <CardTitle className="text-lg font-extrabold text-rose-400 font-mono block mt-0.5">
+          <CardTitle className={`text-lg font-extrabold font-mono block mt-0.5 ${pests > 0 ? 'text-rose-400' : 'text-white'}`}>
             {pests}
           </CardTitle>
         </Card>
@@ -53,7 +53,7 @@ export default function KpiStrip({ overview = {} }) {
           <CardDescription className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
             Hygiene Breaches
           </CardDescription>
-          <CardTitle className="text-lg font-extrabold text-amber-400 font-mono block mt-0.5">
+          <CardTitle className={`text-lg font-extrabold font-mono block mt-0.5 ${hygiene > 0 ? 'text-amber-400' : 'text-white'}`}>
             {hygiene}
           </CardTitle>
         </Card>

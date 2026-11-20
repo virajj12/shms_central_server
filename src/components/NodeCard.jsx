@@ -37,14 +37,14 @@ export default function NodeCard({
 
   return (
     <Card className={`justify-between hover:border-zinc-700 transition-all ${
-      isOnline ? 'border-zinc-800' : 'border-rose-950/40 bg-rose-950/5'
+      isOnline ? 'border-zinc-800' : 'border-zinc-800/80 bg-zinc-950/20'
     }`}>
       <div>
         {/* Header */}
         <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 pb-0">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] pulse-emerald' : 'bg-rose-500'}`} />
+              <span className={`h-2 w-2 rounded-full shrink-0 ${isOnline ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
               <CardTitle className="text-sm font-bold text-white truncate" title={node.name}>
                 {node.name}
               </CardTitle>
@@ -55,7 +55,7 @@ export default function NodeCard({
           </div>
 
           <CardAction className="m-0 shrink-0">
-            <Badge variant={isOnline ? 'success' : 'destructive'}>
+            <Badge variant={isOnline ? 'outline' : 'destructive'} className={isOnline ? 'text-zinc-300' : ''}>
               {node.status}
             </Badge>
           </CardAction>
@@ -83,7 +83,7 @@ export default function NodeCard({
                   title="Copy Kitchen Session ID"
                 >
                   {copiedId ? (
-                    <Check className="h-3 w-3 text-emerald-400" />
+                    <Check className="h-3 w-3 text-zinc-200" />
                   ) : (
                     <Copy className="h-3 w-3 text-zinc-500 hover:text-zinc-200" />
                   )}
@@ -102,14 +102,16 @@ export default function NodeCard({
 
           {/* Duplex Sync Strip */}
           <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
-            <Badge variant={isOnline ? 'success' : 'outline'}>
-              <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
-              {isOnline ? 'Duplex linked (3s)' : 'Offline'}
+            <Badge variant="outline" className="text-zinc-300">
+              <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
+              {isOnline ? 'Duplex linked' : 'Offline'}
             </Badge>
-            <Badge variant={unsynced > 0 ? 'warning' : 'outline'}>
-              {unsynced} unsynced
-            </Badge>
-            <Badge variant="outline">
+            {unsynced > 0 && (
+              <Badge variant="warning">
+                {unsynced} unsynced
+              </Badge>
+            )}
+            <Badge variant="outline" className="text-zinc-400">
               Last sync {lastSync}
             </Badge>
             {telemetry.cpu_percent != null && (
@@ -128,7 +130,7 @@ export default function NodeCard({
               ) : (
                 cameras.map((c) => (
                   <Badge key={c.id || c.name} variant="outline" className="text-zinc-300 gap-1.5 font-normal">
-                    <span className={`h-1.5 w-1.5 rounded-full ${c.connected ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                    <span className={`h-1.5 w-1.5 rounded-full ${c.connected ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
                     <span>{c.name}</span>
                     {c.fps != null && <span className="text-zinc-500">{c.fps}fps</span>}
                   </Badge>
@@ -143,8 +145,8 @@ export default function NodeCard({
       <CardFooter className="p-0 mt-5 pt-4 border-t border-zinc-800/80 flex items-center justify-between gap-2">
         {isPending ? (
           <Button
-            variant="emerald"
-            className="flex-1"
+            variant="default"
+            className="flex-1 font-bold"
             onClick={() => onApprove && onApprove(node.request_id || node.id)}
             title="Approve this kitchen node to grant cloud access"
           >
@@ -161,7 +163,7 @@ export default function NodeCard({
               disabled={!isOnline}
               title={isOnline ? "Capture a live JPEG snapshot from the edge camera" : "Edge appliance is offline"}
             >
-              <Camera className="h-3.5 w-3.5 text-emerald-400" />
+              <Camera className="h-3.5 w-3.5 text-zinc-300" />
               <span>Live Snapshot</span>
             </Button>
 
@@ -172,7 +174,7 @@ export default function NodeCard({
               disabled={!isOnline}
               title={isOnline ? "Ask the edge to sync pending incidents now" : "Edge appliance is offline"}
             >
-              <RefreshCw className="h-3.5 w-3.5 text-sky-400" />
+              <RefreshCw className="h-3.5 w-3.5 text-zinc-300" />
               <span>Sync</span>
             </Button>
 
@@ -182,7 +184,7 @@ export default function NodeCard({
               onClick={() => onOpenConfig(node)}
               title="Remote Edge Settings & AMFV"
             >
-              <Sliders className="h-3.5 w-3.5 text-zinc-400" />
+              <Sliders className="h-3.5 w-3.5 text-zinc-300" />
               <span>Config</span>
             </Button>
           </>

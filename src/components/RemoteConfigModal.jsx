@@ -60,7 +60,7 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
       <DialogContent className="max-w-md p-0 gap-0 overflow-hidden border-zinc-800 bg-[#18181c]">
         <DialogHeader className="p-4 border-b border-zinc-800 text-left">
           <DialogTitle className="text-sm font-bold text-white flex items-center gap-2">
-            <Sliders className="h-4 w-4 text-emerald-400" />
+            <Sliders className="h-4 w-4 text-zinc-300" />
             Remote Edge Configuration
           </DialogTitle>
           <DialogDescription className="text-xs text-zinc-400">

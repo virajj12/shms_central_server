@@ -16,6 +16,7 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 export default function AnalyticsView({ analytics = {} }) {
   const chartDailyRef = useRef(null);
@@ -118,23 +119,27 @@ export default function AnalyticsView({ analytics = {} }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <a
-            href="/api/fleet/export/pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-1.5 px-3 rounded-lg border border-emerald-800/60 bg-emerald-950/20 hover:bg-emerald-900/40 text-emerald-400 hover:text-emerald-300 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
-          >
-            <FileText className="h-3.5 w-3.5 text-emerald-400" />
-            <span>Audit Certificate (PDF)</span>
-          </a>
-          <a
-            href="/api/fleet/export/csv"
-            download
-            className="py-1.5 px-3 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
-          >
-            <FileSpreadsheet className="h-3.5 w-3.5 text-zinc-400" />
-            <span>Export Fleet CSV</span>
-          </a>
+          <Button variant="outline" size="sm" asChild>
+            <a
+              href="/api/fleet/export/pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span>Audit Certificate (PDF)</span>
+            </a>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <a
+              href="/api/fleet/export/csv"
+              download
+              className="flex items-center gap-1.5"
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" />
+              <span>Export Fleet CSV</span>
+            </a>
+          </Button>
         </div>
       </div>
 
@@ -192,8 +197,8 @@ export default function AnalyticsView({ analytics = {} }) {
                       <span className="text-[10px] text-zinc-500 font-mono">#{idx + 1}</span>
                       <span>{r.hotel_name}</span>
                     </TableCell>
-                    <TableCell className="font-mono font-bold text-rose-400">{r.pests}</TableCell>
-                    <TableCell className="font-mono font-bold text-amber-400">{r.hygiene}</TableCell>
+                    <TableCell className={`font-mono font-bold ${r.pests > 0 ? 'text-rose-400' : 'text-zinc-400'}`}>{r.pests}</TableCell>
+                    <TableCell className={`font-mono font-bold ${r.hygiene > 0 ? 'text-amber-400' : 'text-zinc-400'}`}>{r.hygiene}</TableCell>
                     <TableCell className="font-mono font-bold text-white">{r.total_violations}</TableCell>
                   </TableRow>
                 ))

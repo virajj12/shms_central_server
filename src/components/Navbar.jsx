@@ -206,11 +206,11 @@ export default function Navbar({
         <div className="flex items-center gap-3 shrink-0">
           <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-700 flex items-center justify-center">
             {user?.is_superadmin ? (
-              <ShieldAlert className="h-4 w-4 text-amber-400" />
+              <ShieldAlert className="h-4 w-4 text-zinc-300" />
             ) : currentHotel ? (
-              <Building2 className="h-4 w-4 text-emerald-400" />
+              <Building2 className="h-4 w-4 text-zinc-300" />
             ) : (
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              <ShieldCheck className="h-4 w-4 text-zinc-300" />
             )}
           </div>
           <div>
@@ -222,7 +222,7 @@ export default function Navbar({
                   ? currentHotel.name
                   : companyName}
               </span>
-              <Badge variant={user?.is_superadmin ? 'warning' : 'secondary'}>
+              <Badge variant="outline" className="text-zinc-300">
                 {user?.is_superadmin ? 'OPERATOR' : 'HOTEL PORTAL'}
               </Badge>
             </div>
@@ -238,7 +238,7 @@ export default function Navbar({
         <div className="hidden md:flex items-center gap-2">
           {user?.is_superadmin ? (
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
-              <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
               <span className="text-zinc-300 font-medium">
                 {hotels.length} Hotel Organization{hotels.length === 1 ? '' : 's'} Managed
               </span>
@@ -249,14 +249,14 @@ export default function Navbar({
             hotelSlug && (
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
                 <span className="text-zinc-400 text-[11px]">Portal:</span>
-                <span className="font-mono text-emerald-400 font-semibold">/{hotelSlug}</span>
+                <span className="font-mono text-zinc-200 font-semibold">/{hotelSlug}</span>
                 <button
                   onClick={copyVanityLink}
                   className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                   title="Copy hotel portal URL to clipboard"
                 >
                   {copiedVanity ? (
-                    <Check className="h-3 w-3 text-emerald-400" />
+                    <Check className="h-3 w-3 text-zinc-200" />
                   ) : (
                     <Copy className="h-3 w-3" />
                   )}
@@ -268,7 +268,7 @@ export default function Navbar({
           {/* Health Pill (Hotel Tenants Only) */}
           {!user?.is_superadmin && (
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] pulse-emerald" />
+              <span className={`h-1.5 w-1.5 rounded-full ${online > 0 ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
               <span className="text-zinc-300 font-medium">
                 {online} of {total} Node{total === 1 ? '' : 's'} Online
               </span>
@@ -296,7 +296,7 @@ export default function Navbar({
                   </div>
                 </div>
                 {copied ? (
-                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                  <Check className="h-3.5 w-3.5 text-zinc-200" />
                 ) : (
                   <Copy className="h-3.5 w-3.5 text-zinc-500" />
                 )}
@@ -311,7 +311,7 @@ export default function Navbar({
                 }}
                 title="Generate a 6-digit PIN to pair a new kitchen edge server"
               >
-                <KeyRound className="h-3.5 w-3.5 text-amber-400" />
+                <KeyRound className="h-3.5 w-3.5 text-zinc-400" />
                 <span className="hidden sm:inline">Pairing PIN</span>
               </Button>
 
@@ -325,7 +325,7 @@ export default function Navbar({
                 <Inbox className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Approvals</span>
                 {pending.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-amber-400 text-zinc-950 text-[10px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-white text-zinc-950 text-[10px] font-bold flex items-center justify-center">
                     {pending.length}
                   </span>
                 )}
@@ -491,7 +491,7 @@ export default function Navbar({
                 type="button"
                 variant="default"
                 size="sm"
-                className="w-full bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold"
+                className="w-full font-bold"
                 onClick={() => {
                   navigator.clipboard.writeText(generatedCode.code);
                   toast.success(`Pairing PIN ${generatedCode.code} copied!`);

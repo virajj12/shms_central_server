@@ -234,7 +234,7 @@ export default function HotelsManagerView({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-emerald-400" />
+            <Building2 className="h-5 w-5 text-zinc-300" />
             <h2 className="text-base font-bold text-white">
               Multi-Tenant Hotels & Brands Directory
             </h2>
@@ -245,7 +245,7 @@ export default function HotelsManagerView({
         </div>
 
         <Button
-          variant="emerald"
+          variant="default"
           onClick={() => {
             setCreateError('');
             setShowCreateModal(true);
@@ -281,7 +281,7 @@ export default function HotelsManagerView({
               {totalKitchens}
             </CardTitle>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-sky-400 shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 shrink-0">
             <Server className="h-5 w-5" />
           </div>
         </Card>
@@ -291,11 +291,11 @@ export default function HotelsManagerView({
             <CardDescription className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
               Active Online Nodes
             </CardDescription>
-            <CardTitle className="text-2xl font-bold font-mono text-emerald-400 mt-1">
+            <CardTitle className="text-2xl font-bold font-mono text-white mt-1">
               {totalOnline}
             </CardTitle>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400 shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 shrink-0">
             <ShieldCheck className="h-5 w-5" />
           </div>
         </Card>
@@ -351,11 +351,11 @@ export default function HotelsManagerView({
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                          className={`h-2 w-2 rounded-full shrink-0 ${
                             isSuspended
                               ? 'bg-rose-500'
                               : hotel.online_count > 0
-                              ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] pulse-emerald'
+                              ? 'bg-emerald-500'
                               : 'bg-zinc-600'
                           }`}
                         />
@@ -369,7 +369,7 @@ export default function HotelsManagerView({
                     </div>
 
                     <CardAction className="m-0 shrink-0">
-                      <Badge variant={isSuspended ? 'destructive' : 'success'}>
+                      <Badge variant={isSuspended ? 'destructive' : 'outline'} className={!isSuspended ? 'text-zinc-300' : ''}>
                         {hotel.status}
                       </Badge>
                     </CardAction>
@@ -465,11 +465,11 @@ export default function HotelsManagerView({
                           setResetSuccess('');
                         }}
                       >
-                        <KeyRound className="h-4 w-4 text-emerald-400" />
+                        <KeyRound className="h-4 w-4 text-zinc-400" />
                         <span>Reset Password</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleToggleStatus(hotel)}>
-                        <Power className={`h-4 w-4 ${isSuspended ? 'text-emerald-400' : 'text-amber-400'}`} />
+                        <Power className="h-4 w-4 text-zinc-400" />
                         <span>{isSuspended ? 'Activate Hotel' : 'Suspend Access'}</span>
                       </DropdownMenuItem>
                       {hotel.id !== 'OWN-DEFAULT-SYSTEM' && (
@@ -549,7 +549,7 @@ export default function HotelsManagerView({
                         .replace(/[^a-z0-9-]/g, ''),
                     })
                   }
-                  className="font-mono text-emerald-400 focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
+                  className="font-mono text-zinc-100"
                 />
               </div>
               <span className="text-[10px] text-zinc-500 mt-0.5 block font-mono">
@@ -574,7 +574,7 @@ export default function HotelsManagerView({
                       admin_username: e.target.value.trim(),
                     })
                   }
-                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
+                  className="font-mono"
                 />
               </div>
 
@@ -594,7 +594,7 @@ export default function HotelsManagerView({
                       admin_password: e.target.value,
                     })
                   }
-                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
+                  className="font-mono"
                 />
               </div>
             </div>
@@ -615,7 +615,6 @@ export default function HotelsManagerView({
                       contact_email: e.target.value,
                     })
                   }
-                  className="focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 
@@ -635,7 +634,7 @@ export default function HotelsManagerView({
                       max_kitchens: e.target.value,
                     })
                   }
-                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
+                  className="font-mono"
                 />
               </div>
             </div>
@@ -651,7 +650,7 @@ export default function HotelsManagerView({
               </Button>
               <Button
                 type="submit"
-                variant="emerald"
+                variant="default"
                 size="sm"
                 disabled={creating}
               >
@@ -669,11 +668,11 @@ export default function HotelsManagerView({
           <DialogContent className="max-w-sm">
             <DialogHeader className="pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2">
-                <KeyRound className="h-4 w-4 text-emerald-400" />
+                <KeyRound className="h-4 w-4 text-zinc-300" />
                 <DialogTitle className="text-sm font-bold text-white">Reset Hotel Password</DialogTitle>
               </div>
               <DialogDescription className="text-xs text-zinc-400 pt-1">
-                Set a new access password for <strong className="text-white">{resetModalHotel.name}</strong> (Username: <code className="text-emerald-400">{resetModalHotel.admin_username || resetModalHotel.slug}</code>).
+                Set a new access password for <strong className="text-white">{resetModalHotel.name}</strong> (Username: <code className="text-zinc-200">{resetModalHotel.admin_username || resetModalHotel.slug}</code>).
               </DialogDescription>
             </DialogHeader>
 
@@ -703,7 +702,7 @@ export default function HotelsManagerView({
                   placeholder="Minimum 6 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
+                  className="font-mono"
                 />
               </div>
 
@@ -718,7 +717,7 @@ export default function HotelsManagerView({
                 </Button>
                 <Button
                   type="submit"
-                  variant="emerald"
+                  variant="default"
                   size="sm"
                   disabled={resetting}
                 >
@@ -737,11 +736,11 @@ export default function HotelsManagerView({
           <DialogContent className="max-w-md">
             <DialogHeader className="pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-emerald-400" />
+                <Settings className="h-4 w-4 text-zinc-300" />
                 <DialogTitle className="text-sm font-bold text-white">Edit Hotel Settings &amp; Quotas</DialogTitle>
               </div>
               <DialogDescription className="text-xs text-zinc-400 pt-1">
-                Configure parameters for <strong className="text-white">{editModalHotel.name}</strong> (Endpoint: <code className="text-emerald-400">/{editModalHotel.slug}</code>).
+                Configure parameters for <strong className="text-white">{editModalHotel.name}</strong> (Endpoint: <code className="text-zinc-200">/{editModalHotel.slug}</code>).
               </DialogDescription>
             </DialogHeader>
 
@@ -770,7 +769,6 @@ export default function HotelsManagerView({
                   required
                   value={editFormData.company_name}
                   onChange={(e) => setEditFormData({ ...editFormData, company_name: e.target.value })}
-                  className="focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
 
@@ -784,7 +782,7 @@ export default function HotelsManagerView({
                   value={editFormData.contact_email}
                   onChange={(e) => setEditFormData({ ...editFormData, contact_email: e.target.value })}
                   placeholder="admin@hotel.com"
-                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
+                  className="font-mono"
                 />
               </div>
 
@@ -800,7 +798,7 @@ export default function HotelsManagerView({
                   required
                   value={editFormData.max_kitchens}
                   onChange={(e) => setEditFormData({ ...editFormData, max_kitchens: Number(e.target.value) })}
-                  className="font-mono focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
+                  className="font-mono"
                 />
                 <span className="text-[10px] text-zinc-500 block mt-0.5">
                   Limits the maximum number of edge kitchen computers this hotel can pair.
@@ -818,7 +816,7 @@ export default function HotelsManagerView({
                 </Button>
                 <Button
                   type="submit"
-                  variant="emerald"
+                  variant="default"
                   size="sm"
                   disabled={editing}
                 >

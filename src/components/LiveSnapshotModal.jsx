@@ -63,7 +63,7 @@ export default function LiveSnapshotModal({ isOpen, onClose, node }) {
       <DialogContent className="max-w-5xl p-0 gap-0 overflow-hidden border-zinc-800 bg-[#18181c]">
         <DialogHeader className="p-4 border-b border-zinc-800 text-left">
           <DialogTitle className="text-sm font-bold text-white flex items-center gap-2">
-            <Camera className="h-4 w-4 text-emerald-400" />
+            <Camera className="h-4 w-4 text-zinc-300" />
             {node.name} &mdash; Live Snapshot
           </DialogTitle>
           <DialogDescription className="text-xs text-zinc-400">
