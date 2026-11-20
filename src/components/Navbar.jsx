@@ -56,7 +56,7 @@ export default function Navbar({
     : user?.owner_id;
 
   const loadOwnerData = useCallback(async () => {
-    if (!user) return;
+    if (!user || user.is_superadmin) return;
     try {
       const [info, enrollment] = await Promise.all([
         api.getOwnerInfo(activeOwnerId),
