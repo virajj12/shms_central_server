@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/sonner';
 
 export default function NodeCard({
   node,
@@ -75,6 +76,7 @@ export default function NodeCard({
                   onClick={(e) => {
                     e.stopPropagation();
                     navigator.clipboard.writeText(node.id);
+                    toast.success(`Kitchen session ID ${node.id} copied`);
                     setCopiedId(true);
                     setTimeout(() => setCopiedId(false), 2000);
                   }}

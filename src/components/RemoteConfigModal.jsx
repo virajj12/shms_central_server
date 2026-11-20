@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from '@/components/ui/sonner';
 
 export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) {
   const [windowSize, setWindowSize] = useState(2);
@@ -42,11 +43,13 @@ export default function RemoteConfigModal({ isOpen, onClose, node, onSuccess }) 
         cooldown: parseInt(cooldown),
       };
       await api.pushConfig(node.id, payload);
-      alert(`Configuration queued for ${node.name}! It will be applied automatically on its next heartbeat.`);
+      toast.success(`Configuration queued for ${node.name}!`, {
+        description: 'It will be applied automatically on its next heartbeat.',
+      });
       onSuccess?.();
       onClose();
     } catch (err) {
-      alert(`Failed to push configuration: ${err.message}`);
+      toast.error(`Failed to push configuration: ${err.message}`);
     } finally {
       setSaving(false);
     }

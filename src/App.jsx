@@ -30,6 +30,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/sonner';
 
 const RESERVED_PATHS = new Set(['', 'login', 'admin', 'admin/login', 'evidence', 'analytics', 'settings', 'nodes']);
 
@@ -185,6 +186,7 @@ export default function App() {
   const handleLogout = async () => {
     try {
       await api.logout();
+      toast.success('Signed out successfully');
     } finally {
       setCurrentUser(null);
     }
@@ -194,30 +196,32 @@ export default function App() {
     if (!window.confirm(`Are you sure you want to deregister node ${edgeId}?`)) return;
     try {
       await api.deleteNode(edgeId);
+      toast.success(`Node ${edgeId} deregistered successfully`);
       refreshData();
       if (currentUser?.is_superadmin) loadHotels();
     } catch (e) {
-      alert(e.message);
+      toast.error(e.message || 'Failed to deregister node');
     }
   };
 
   const handleApproveNode = async (identifier) => {
     try {
       await api.approveEnrollment(identifier);
+      toast.success('Node approved and enrolled successfully');
       refreshData();
       if (currentUser?.is_superadmin) loadHotels();
     } catch (e) {
-      alert(`Approval error: ${e.message}`);
+      toast.error(`Approval error: ${e.message}`);
     }
   };
 
   const handleTriggerSync = async (node) => {
     try {
       const result = await api.triggerSync(node.id);
-      alert(result.message || 'Sync requested');
+      toast.success(result.message || 'Sync requested successfully');
       refreshData();
     } catch (e) {
-      alert(e.message);
+      toast.error(e.message || 'Failed to trigger sync');
     }
   };
 

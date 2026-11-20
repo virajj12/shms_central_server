@@ -49,6 +49,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from '@/components/ui/sonner';
 
 export default function HotelsManagerView({
   hotels = [],
@@ -90,6 +91,7 @@ export default function HotelsManagerView({
     e?.stopPropagation();
     const url = `${originUrl}/${slug}`;
     navigator.clipboard.writeText(url);
+    toast.success(`Copied portal link: ${url}`);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
   };
@@ -120,6 +122,7 @@ export default function HotelsManagerView({
     setCreateError('');
     try {
       await api.createHotel(formData);
+      toast.success(`Hotel "${formData.company_name}" created successfully!`);
       setShowCreateModal(false);
       setFormData({
         company_name: '',
@@ -141,9 +144,10 @@ export default function HotelsManagerView({
     const nextStatus = hotel.status === 'active' ? 'suspended' : 'active';
     try {
       await api.updateHotel(hotel.id, { status: nextStatus });
+      toast.success(`Hotel status changed to ${nextStatus}`);
       onRefresh();
     } catch (err) {
-      alert(`Error updating hotel status: ${err.message}`);
+      toast.error(`Error updating hotel status: ${err.message}`);
     }
   };
 
@@ -156,6 +160,7 @@ export default function HotelsManagerView({
     try {
       await api.updateHotel(editModalHotel.id, editFormData);
       setEditSuccess('Hotel details updated successfully!');
+      toast.success('Hotel details updated successfully!');
       setTimeout(() => {
         setEditModalHotel(null);
         setEditSuccess('');
@@ -163,6 +168,7 @@ export default function HotelsManagerView({
       }, 1000);
     } catch (err) {
       setEditError(err.message || 'Failed to update hotel details');
+      toast.error(err.message || 'Failed to update hotel details');
     } finally {
       setEditing(false);
     }
@@ -178,9 +184,10 @@ export default function HotelsManagerView({
     }
     try {
       await api.deleteHotel(hotel.id);
+      toast.success(`Hotel "${hotel.name}" deleted successfully`);
       onRefresh();
     } catch (err) {
-      alert(`Delete error: ${err.message}`);
+      toast.error(`Delete error: ${err.message}`);
     }
   };
 
@@ -192,7 +199,9 @@ export default function HotelsManagerView({
     setResetSuccess('');
     try {
       await api.resetHotelPassword(resetModalHotel.id, newPassword);
-      setResetSuccess(`Password updated successfully for ${resetModalHotel.admin_username || resetModalHotel.name}`);
+      const msg = `Password updated successfully for ${resetModalHotel.admin_username || resetModalHotel.name}`;
+      setResetSuccess(msg);
+      toast.success(msg);
       setTimeout(() => {
         setResetModalHotel(null);
         setNewPassword('');
@@ -200,6 +209,7 @@ export default function HotelsManagerView({
       }, 1500);
     } catch (err) {
       setResetError(err.message || 'Failed to update password');
+      toast.error(err.message || 'Failed to update password');
     } finally {
       setResetting(false);
     }

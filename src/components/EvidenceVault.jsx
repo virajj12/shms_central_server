@@ -19,6 +19,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
+import { toast } from '@/components/ui/sonner';
 
 export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerId = null }) {
   const [violations, setViolations] = useState([]);
@@ -48,12 +49,14 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerI
     e.stopPropagation();
     try {
       await api.acknowledgeViolation(id);
+      toast.success('Incident violation marked as reviewed');
       setViolations((prev) =>
         prev.map((v) => (v.id === id ? { ...v, acknowledged: true } : v))
       );
       onViolationsChanged?.();
     } catch (e) {
       console.error('Failed to acknowledge', e);
+      toast.error('Failed to update violation status');
     }
   };
 

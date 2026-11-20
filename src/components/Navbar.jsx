@@ -41,6 +41,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { toast } from '@/components/ui/sonner';
 
 export default function Navbar({
   overview,
@@ -123,6 +124,7 @@ export default function Navbar({
   const copyOwnerId = async () => {
     try {
       await navigator.clipboard.writeText(ownerId);
+      toast.success('Organization ID copied to clipboard');
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (error) {
@@ -133,7 +135,9 @@ export default function Navbar({
   const copyVanityLink = async () => {
     if (!hotelSlug) return;
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/${hotelSlug}`);
+      const url = `${window.location.origin}/${hotelSlug}`;
+      await navigator.clipboard.writeText(url);
+      toast.success(`Copied portal URL: ${url}`);
       setCopiedVanity(true);
       setTimeout(() => setCopiedVanity(false), 2000);
     } catch (error) {
@@ -153,9 +157,10 @@ export default function Navbar({
   const approveEnrollment = async (requestId) => {
     try {
       await api.approveEnrollment(requestId);
+      toast.success('Enrollment approved successfully');
       await loadOwnerData();
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message || 'Failed to approve enrollment');
     }
   };
 
@@ -164,9 +169,10 @@ export default function Navbar({
     if (reason === null) return;
     try {
       await api.rejectEnrollment(requestId, reason);
+      toast.success('Enrollment request rejected');
       await loadOwnerData();
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message || 'Failed to reject enrollment');
     }
   };
 
@@ -185,8 +191,9 @@ export default function Navbar({
         ttl_minutes: 60,
       });
       setGeneratedCode(result);
+      toast.success('Pairing code generated successfully');
     } catch (err) {
-      alert(`Failed to generate pairing code: ${err.message}`);
+      toast.error(`Failed to generate pairing code: ${err.message}`);
     } finally {
       setGeneratingPin(false);
     }
@@ -487,6 +494,7 @@ export default function Navbar({
                 className="w-full bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold"
                 onClick={() => {
                   navigator.clipboard.writeText(generatedCode.code);
+                  toast.success(`Pairing PIN ${generatedCode.code} copied!`);
                   setCopiedPin(true);
                   setTimeout(() => setCopiedPin(false), 2000);
                 }}

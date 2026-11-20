@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from '@/components/ui/sonner';
 import {
   Dialog,
   DialogContent,
@@ -48,9 +49,12 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
 
     try {
       const res = await api.login(username, password);
+      toast.success(`Welcome back, ${res.hotel_name || res.user}!`);
       onLoginSuccess(res);
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please check your hotel endpoint and password.');
+      const msg = err.message || 'Authentication failed. Please check your hotel endpoint and password.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -68,8 +72,11 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
       setMaskedEmail(res.masked_email);
       setForgotStep(2);
       setForgotSuccess(res.message);
+      toast.info(res.message);
     } catch (err) {
-      setForgotError(err.message || 'Failed to request password reset code');
+      const msg = err.message || 'Failed to request password reset code';
+      setForgotError(msg);
+      toast.error(msg);
     } finally {
       setForgotLoading(false);
     }
@@ -83,6 +90,7 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
     try {
       const res = await api.verifyPasswordReset(forgotOwnerId, otpCode, newPassword);
       setForgotSuccess(res.message);
+      toast.success(res.message);
       setTimeout(() => {
         setShowForgotModal(false);
         setForgotStep(1);
@@ -92,6 +100,9 @@ export default function LoginView({ hotel = null, onLoginSuccess }) {
         setNewPassword('');
       }, 2000);
     } catch (err) {
+      const msg = err.message || 'Verification failed';
+      setForgotError(msg);
+      toast.error(msg);
       setForgotError(err.message || 'Verification failed');
     } finally {
       setForgotLoading(false);

@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from '@/components/ui/sonner';
 
 export default function AdminLoginView({ onLoginSuccess }) {
   const [username, setUsername] = useState('admin');
@@ -32,9 +33,12 @@ export default function AdminLoginView({ onLoginSuccess }) {
       if (!res.is_superadmin) {
         throw new Error('This console is restricted to Service Provider Platform Administrators.');
       }
+      toast.success('Platform Administrator authenticated');
       onLoginSuccess(res);
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please check administrator credentials.');
+      const msg = err.message || 'Authentication failed. Please check administrator credentials.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
