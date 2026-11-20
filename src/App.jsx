@@ -24,6 +24,7 @@ import LoginView from './components/LoginView';
 import AdminLoginView from './components/AdminLoginView';
 import HotelsManagerView from './components/HotelsManagerView';
 import { api } from './services/api';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const RESERVED_PATHS = new Set(['', 'login', 'admin', 'admin/login', 'evidence', 'analytics', 'settings', 'nodes']);
 
@@ -431,78 +432,47 @@ export default function App() {
 
       {/* Secondary Tab Bar */}
       <div className="border-b border-zinc-800/80 bg-[#141418] px-4 sm:px-6 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-1 overflow-x-auto">
-          {currentUser.is_superadmin ? (
-            <>
-              <button
-                onClick={() => setActiveTab('hotels')}
-                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeTab !== 'settings'
-                    ? 'bg-white text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <Building2 className="h-3.5 w-3.5" />
-                <span>Hotels &amp; Endpoints Directory</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeTab === 'settings'
-                    ? 'bg-white text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <Settings className="h-3.5 w-3.5" />
-                <span>Platform Settings &amp; SMTP</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => setActiveTab('nodes')}
-                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeTab === 'nodes'
-                    ? 'bg-white text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <Server className="h-3.5 w-3.5" />
-                <span>
-                  {currentHotelPortal ? `${currentHotelPortal.name} Branches` : 'Edge Kitchen Nodes'}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('evidence')}
-                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeTab === 'evidence'
-                    ? 'bg-white text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <ImageIcon className="h-3.5 w-3.5" />
-                <span>Evidence Vault</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setActiveTab('analytics');
-                  api.getAnalytics().then(setAnalytics).catch(console.error);
-                }}
-                className={`flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeTab === 'analytics'
-                    ? 'bg-white text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <BarChart3 className="h-3.5 w-3.5" />
-                <span>Compliance &amp; Analytics</span>
-              </button>
-            </>
-          )}
-        </div>
+        <Tabs
+          value={activeTab === 'hotels' && !currentUser.is_superadmin ? 'nodes' : activeTab}
+          onValueChange={(val) => {
+            setActiveTab(val);
+            if (val === 'analytics') {
+              api.getAnalytics().then(setAnalytics).catch(console.error);
+            }
+          }}
+        >
+          <TabsList className="bg-transparent border-0 p-0 gap-1 overflow-x-auto justify-start">
+            {currentUser.is_superadmin ? (
+              <>
+                <TabsTrigger value="hotels" className="flex items-center gap-2">
+                  <Building2 className="h-3.5 w-3.5" />
+                  <span>Hotels &amp; Endpoints Directory</span>
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center gap-2">
+                  <Settings className="h-3.5 w-3.5" />
+                  <span>Platform Settings &amp; SMTP</span>
+                </TabsTrigger>
+              </>
+            ) : (
+              <>
+                <TabsTrigger value="nodes" className="flex items-center gap-2">
+                  <Server className="h-3.5 w-3.5" />
+                  <span>
+                    {currentHotelPortal ? `${currentHotelPortal.name} Branches` : 'Edge Kitchen Nodes'}
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="evidence" className="flex items-center gap-2">
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  <span>Evidence Vault</span>
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="flex items-center gap-2">
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  <span>Compliance &amp; Analytics</span>
+                </TabsTrigger>
+              </>
+            )}
+          </TabsList>
+        </Tabs>
 
         {!currentUser.is_superadmin && (
           <div>

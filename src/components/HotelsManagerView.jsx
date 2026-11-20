@@ -26,6 +26,15 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardAction,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
 
 export default function HotelsManagerView({
   hotels = [],
@@ -225,47 +234,47 @@ export default function HotelsManagerView({
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-[#18181c] border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
+        <Card size="sm" className="flex-row items-center justify-between p-4">
           <div>
-            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
+            <CardDescription className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
               Registered Hotels
-            </span>
-            <div className="text-2xl font-bold font-mono text-white mt-1">
+            </CardDescription>
+            <CardTitle className="text-2xl font-bold font-mono text-white mt-1">
               {hotels.length}
-            </div>
+            </CardTitle>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
+          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 shrink-0">
             <Building2 className="h-5 w-5" />
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-[#18181c] border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
+        <Card size="sm" className="flex-row items-center justify-between p-4">
           <div>
-            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
+            <CardDescription className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
               Total Kitchen Branches
-            </span>
-            <div className="text-2xl font-bold font-mono text-white mt-1">
+            </CardDescription>
+            <CardTitle className="text-2xl font-bold font-mono text-white mt-1">
               {totalKitchens}
-            </div>
+            </CardTitle>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-sky-400">
+          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-sky-400 shrink-0">
             <Server className="h-5 w-5" />
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-[#18181c] border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
+        <Card size="sm" className="flex-row items-center justify-between p-4">
           <div>
-            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
+            <CardDescription className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
               Active Online Nodes
-            </span>
-            <div className="text-2xl font-bold font-mono text-emerald-400 mt-1">
+            </CardDescription>
+            <CardTitle className="text-2xl font-bold font-mono text-emerald-400 mt-1">
               {totalOnline}
-            </div>
+            </CardTitle>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400">
+          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400 shrink-0">
             <ShieldCheck className="h-5 w-5" />
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Filter / Search Bar */}
@@ -304,15 +313,15 @@ export default function HotelsManagerView({
             const isSuspended = hotel.status === 'suspended';
 
             return (
-              <div
+              <Card
                 key={hotel.id}
-                className={`bg-[#18181c] border ${
+                className={`justify-between transition-all ${
                   isSuspended ? 'border-rose-950/50 bg-rose-950/5' : 'border-zinc-800 hover:border-zinc-700'
-                } rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all`}
+                }`}
               >
                 <div>
                   {/* Header */}
-                  <div className="flex items-start justify-between gap-3">
+                  <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 pb-0">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span
@@ -324,76 +333,80 @@ export default function HotelsManagerView({
                               : 'bg-zinc-600'
                           }`}
                         />
-                        <h3 className="text-sm font-bold text-white truncate" title={hotel.name}>
+                        <CardTitle className="text-sm font-bold text-white truncate" title={hotel.name}>
                           {hotel.name}
-                        </h3>
+                        </CardTitle>
                       </div>
-                      <div className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
+                      <CardDescription className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
                         ID: {hotel.id}
+                      </CardDescription>
+                    </div>
+
+                    <CardAction className="m-0 shrink-0">
+                      <span
+                        className={`px-2 py-0.5 text-[10px] font-mono uppercase font-bold rounded ${
+                          isSuspended
+                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                            : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                        }`}
+                      >
+                        {hotel.status}
+                      </span>
+                    </CardAction>
+                  </CardHeader>
+
+                  <CardContent className="p-0 pt-3.5">
+                    {/* Client Endpoint Handle Pill */}
+                    <div className="p-2 rounded-xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-1.5 min-w-0 font-mono">
+                        <span className="text-zinc-500 shrink-0">Client Endpoint:</span>
+                        <span className="text-emerald-400 font-semibold truncate select-all">
+                          /{hotel.slug}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={(e) => handleCopyLink(hotel.slug, e)}
+                          className="py-1 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                          title="Copy client login link to provide to hotel owner"
+                        >
+                          {copiedSlug === hotel.slug ? (
+                            <>
+                              <Check className="h-3 w-3 text-emerald-400" />
+                              <span className="text-emerald-400">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3" />
+                              <span>Copy Link</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
 
-                    <span
-                      className={`px-2 py-0.5 text-[10px] font-mono uppercase font-bold rounded ${
-                        isSuspended
-                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-                          : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                      }`}
-                    >
-                      {hotel.status}
-                    </span>
-                  </div>
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-2 mt-3 p-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/80 text-[11px]">
+                      <div>
+                        <span className="text-zinc-500 text-[10px] block">Kitchen Branches</span>
+                        <span className="font-mono text-zinc-200 font-semibold block mt-0.5">
+                          {hotel.kitchen_count} of {hotel.max_kitchens || 20} Max ({hotel.online_count} Online)
+                        </span>
+                      </div>
 
-                  {/* Client Endpoint Handle Pill */}
-                  <div className="mt-3.5 p-2 rounded-xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-between gap-2 text-xs">
-                    <div className="flex items-center gap-1.5 min-w-0 font-mono">
-                      <span className="text-zinc-500 shrink-0">Client Endpoint:</span>
-                      <span className="text-emerald-400 font-semibold truncate select-all">
-                        /{hotel.slug}
-                      </span>
+                      <div>
+                        <span className="text-zinc-500 text-[10px] block">Owner Login Handle</span>
+                        <span className="font-mono text-emerald-400 font-semibold block mt-0.5 truncate" title={`Sign in with username: ${hotel.admin_username || hotel.slug}`}>
+                          {hotel.admin_username || hotel.slug}
+                        </span>
+                      </div>
                     </div>
-
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={(e) => handleCopyLink(hotel.slug, e)}
-                        className="py-1 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors"
-                        title="Copy client login link to provide to hotel owner"
-                      >
-                        {copiedSlug === hotel.slug ? (
-                          <>
-                            <Check className="h-3 w-3 text-emerald-400" />
-                            <span className="text-emerald-400">Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3 w-3" />
-                            <span>Copy Link</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-2 gap-2 mt-3 p-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/80 text-[11px]">
-                    <div>
-                      <span className="text-zinc-500 text-[10px] block">Kitchen Branches</span>
-                      <span className="font-mono text-zinc-200 font-semibold block mt-0.5">
-                        {hotel.kitchen_count} of {hotel.max_kitchens || 20} Max ({hotel.online_count} Online)
-                      </span>
-                    </div>
-
-                    <div>
-                      <span className="text-zinc-500 text-[10px] block">Owner Login Handle</span>
-                      <span className="font-mono text-emerald-400 font-semibold block mt-0.5 truncate" title={`Sign in with username: ${hotel.admin_username || hotel.slug}`}>
-                        {hotel.admin_username || hotel.slug}
-                      </span>
-                    </div>
-                  </div>
+                  </CardContent>
                 </div>
 
                 {/* Actions Toolbar (Superadmin Operator Only Manages) */}
-                <div className="mt-5 pt-3.5 border-t border-zinc-800 flex items-center justify-between gap-1.5">
+                <CardFooter className="p-0 mt-5 pt-3.5 border-t border-zinc-800/80 flex items-center justify-between gap-1.5">
                   <button
                     onClick={() => {
                       setEditModalHotel(hotel);
@@ -444,8 +457,8 @@ export default function HotelsManagerView({
                       <Trash2 className="h-4 w-4" />
                     </button>
                   )}
-                </div>
-              </div>
+                </CardFooter>
+              </Card>
             );
           })
         )}

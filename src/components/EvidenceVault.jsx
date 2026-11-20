@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, ZoomIn, X, Check } from 'lucide-react';
+import { ShieldCheck, ZoomIn, Check } from 'lucide-react';
 import { api } from '../services/api';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerId = null }) {
   const [violations, setViolations] = useState([]);
@@ -61,22 +70,14 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerI
             ))}
           </select>
 
-          {/* Category Pills */}
-          <div className="flex bg-zinc-900 border border-zinc-800 p-0.5 rounded-lg">
-            {['all', 'pest', 'hygiene'].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategoryFilter(cat)}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                  categoryFilter === cat 
-                    ? 'bg-white text-zinc-950 shadow-sm' 
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-              </button>
-            ))}
-          </div>
+          {/* Category Tabs */}
+          <Tabs value={categoryFilter} onValueChange={setCategoryFilter}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="pest">Pest</TabsTrigger>
+              <TabsTrigger value="hygiene">Hygiene</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 
@@ -95,9 +96,9 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerI
             const imgUrl = item.snapshot_url;
 
             return (
-              <div 
+              <Card 
                 key={item.id}
-                className="bg-[#18181c] border border-zinc-800 rounded-xl overflow-hidden shadow-lg flex flex-col hover:border-zinc-700 transition-all"
+                className="p-0 gap-0 overflow-hidden shadow-lg hover:border-zinc-700 transition-all"
               >
                 <div 
                   className="relative aspect-video bg-black cursor-pointer group"
@@ -108,14 +109,19 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerI
                       src={imgUrl} 
                       alt={labelNice} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs">No Snapshot</div>
+                    <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs font-mono">
+                      No Image Recorded
+                    </div>
                   )}
 
-                  <div className="absolute top-2 left-2 flex gap-1">
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${isPest ? 'bg-rose-500 text-white' : 'bg-amber-400 text-zinc-950'}`}>
-                      {isPest ? 'PEST' : 'HYGIENE'}
+                  <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                      isPest ? 'bg-rose-500/90 text-white' : 'bg-amber-500/90 text-zinc-950 font-extrabold'
+                    }`}>
+                      {item.category}
                     </span>
                     <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-black/70 text-zinc-200 border border-zinc-700">
                       {Math.round((item.confidence || 0) * 100)}%
@@ -127,7 +133,7 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerI
                   </div>
                 </div>
 
-                <div className="p-3 flex items-center justify-between text-xs">
+                <CardContent className="p-3 flex items-center justify-between text-xs">
                   <div>
                     <div className="font-bold text-white">{labelNice}</div>
                     <div className="text-[10px] text-zinc-400 mt-0.5">
@@ -145,35 +151,33 @@ export default function EvidenceVault({ hotels = [], onViolationsChanged, ownerI
                   >
                     {item.acknowledged ? '✓ Reviewed' : 'Review'}
                   </button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             );
           })
         )}
       </div>
 
-      {/* Zoom Inspector Modal */}
-      {zoomItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-          <div className="bg-[#18181c] border border-zinc-800 rounded-2xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col">
-            <div className="p-3 border-b border-zinc-800 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-white">{zoomItem.label.replace('_', ' ').toUpperCase()} Evidence</h3>
-                <div className="text-xs text-zinc-400">
+      {/* Zoom Inspector Dialog */}
+      <Dialog open={Boolean(zoomItem)} onOpenChange={(open) => !open && setZoomItem(null)}>
+        <DialogContent className="max-w-4xl p-0 gap-0 overflow-hidden border-zinc-800 bg-[#18181c]">
+          {zoomItem && (
+            <>
+              <DialogHeader className="p-3 border-b border-zinc-800 text-left">
+                <DialogTitle className="text-sm font-bold text-white">
+                  {zoomItem.label.replace('_', ' ').toUpperCase()} Evidence
+                </DialogTitle>
+                <DialogDescription className="text-xs text-zinc-400">
                   {zoomItem.hotel_name} &bull; {zoomItem.timestamp} &bull; Confidence: {Math.round((zoomItem.confidence || 0) * 100)}%
-                </div>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="relative bg-black aspect-video flex items-center justify-center overflow-hidden">
+                <img src={zoomItem.snapshot_url} alt="Evidence Full" className="max-h-[70vh] w-auto object-contain" />
               </div>
-              <button onClick={() => setZoomItem(null)} className="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="relative bg-black aspect-video flex items-center justify-center overflow-hidden">
-              <img src={zoomItem.snapshot_url} alt="Evidence Full" className="max-h-[70vh] w-auto object-contain" />
-            </div>
-          </div>
-        </div>
-      )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-

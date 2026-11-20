@@ -1,6 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import { FileSpreadsheet, FileText } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/card';
 
 export default function AnalyticsView({ analytics = {} }) {
   const chartDailyRef = useRef(null);
@@ -125,35 +132,35 @@ export default function AnalyticsView({ analytics = {} }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* 7-Day Trend Chart */}
-        <div className="bg-[#18181c] border border-zinc-800 rounded-2xl p-4 shadow-lg flex flex-col h-80">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-white">7-Day Incident Trend</span>
-            <span className="text-[10px] text-zinc-500 font-mono">Daily Violations</span>
-          </div>
-          <div className="flex-1 relative">
+        <Card className="p-4 flex flex-col h-80">
+          <CardHeader className="flex-row items-center justify-between p-0 mb-2 space-y-0">
+            <CardTitle className="text-xs font-bold text-white">7-Day Incident Trend</CardTitle>
+            <CardDescription className="text-[10px] text-zinc-500 font-mono">Daily Violations</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0 flex-1 relative">
             <canvas ref={chartDailyRef}></canvas>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* 24-Hour Peak Risk Chart */}
-        <div className="bg-[#18181c] border border-zinc-800 rounded-2xl p-4 shadow-lg flex flex-col h-80">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-white">24-Hour Peak Incursion Vulnerability</span>
-            <span className="text-[10px] text-zinc-500 font-mono">Hour of Day (24h)</span>
-          </div>
-          <div className="flex-1 relative">
+        <Card className="p-4 flex flex-col h-80">
+          <CardHeader className="flex-row items-center justify-between p-0 mb-2 space-y-0">
+            <CardTitle className="text-xs font-bold text-white">24-Hour Peak Incursion Vulnerability</CardTitle>
+            <CardDescription className="text-[10px] text-zinc-500 font-mono">Hour of Day (24h)</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0 flex-1 relative">
             <canvas ref={chartHourlyRef}></canvas>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Branch Risk Ranking Leaderboard */}
-      <div className="bg-[#18181c] border border-zinc-800 rounded-2xl p-5 shadow-lg">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold text-white">Hotel Branch Risk Ranking</span>
-          <span className="text-[10px] text-zinc-500">Ranked by total compliance infractions</span>
-        </div>
-        <div className="overflow-x-auto">
+      <Card className="p-5">
+        <CardHeader className="flex-row items-center justify-between p-0 mb-3 space-y-0">
+          <CardTitle className="text-xs font-bold text-white">Hotel Branch Risk Ranking</CardTitle>
+          <CardDescription className="text-[10px] text-zinc-500">Ranked by total compliance infractions</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider">
@@ -185,9 +192,8 @@ export default function AnalyticsView({ analytics = {} }) {
               )}
             </tbody>
           </table>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
-
